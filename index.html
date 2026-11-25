@@ -58,18 +58,26 @@
         <div class="min-w-0">
           <div class="flex items-center gap-1.5 min-w-0">
             <h1 class="text-sm sm:text-base font-bold text-slate-900 truncate">단어 팟캐스트 스튜디오</h1>
-            <span class="px-1.5 py-0.5 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-200 text-[10px] font-bold shrink-0">v2.0</span>
+            <span class="px-1.5 py-0.5 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-200 text-[10px] font-bold shrink-0">v2.4</span>
           </div>
           <p class="text-[11px] text-slate-500 truncate hidden sm:block">이미지 업로드 → PDF 단어장 → 퀴즈 대본 → AI 오디오</p>
         </div>
       </div>
 
-      <button id="openSettingsBtn" type="button"
-        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition shrink-0">
-        <span id="apiStatusDot" class="w-2 h-2 rounded-full bg-amber-500"></span>
-        <span id="apiStatusText">API 키 설정</span>
-        <i data-lucide="settings" class="w-3.5 h-3.5"></i>
-      </button>
+      <div class="flex items-center gap-1.5 shrink-0">
+        <button id="openLibraryBtn" type="button"
+          class="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full text-xs font-semibold border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 transition">
+          <i data-lucide="bookmark" class="w-3.5 h-3.5"></i>
+          <span>보관함</span>
+          <span id="libraryCountBadge" class="px-1.5 py-0.2 rounded-full bg-indigo-600 text-white text-[10px] font-bold">0</span>
+        </button>
+        <button id="openSettingsBtn" type="button"
+          class="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full text-xs font-semibold border transition shrink-0">
+          <span id="apiStatusDot" class="w-2 h-2 rounded-full bg-amber-500"></span>
+          <span id="apiStatusText" class="hidden sm:inline">API 키 설정</span>
+          <i data-lucide="settings" class="w-3.5 h-3.5"></i>
+        </button>
+      </div>
     </div>
 
     <!-- Step Tabs -->
@@ -153,6 +161,11 @@
             <span id="wordCountBadge" class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 text-xs font-bold">0개</span>
           </div>
           <div class="flex items-center gap-2">
+            <button id="saveToLibraryQuickBtn" type="button"
+              class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 text-xs font-semibold text-indigo-700 transition">
+              <i data-lucide="save" class="w-3.5 h-3.5"></i>
+              보관함 저장
+            </button>
             <button id="clearAllWordsBtn" type="button"
               class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-rose-200 bg-rose-50 hover:bg-rose-100 text-xs font-semibold text-rose-700 transition">
               <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
@@ -181,7 +194,7 @@
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <h2 class="text-base sm:text-lg font-bold text-slate-900">2. 정해진 양식의 단어장 PDF 만들기</h2>
-            <p class="text-xs sm:text-sm text-slate-500 mt-0.5">2단 테스트지 양식과 학습용 정리표를 선택해 PDF로 저장할 수 있어요.</p>
+            <p class="text-xs sm:text-sm text-slate-500 mt-0.5">단어장, Test(랜덤 순서), Retest(새 랜덤 순서) 중 원하는 양식을 선택해 PDF로 저장할 수 있어요.</p>
           </div>
           <div class="flex flex-wrap gap-2">
             <button id="reshuffleTestBtn" type="button"
@@ -212,11 +225,9 @@
             <label for="pdfModeSelect" class="block text-xs font-semibold text-slate-600 mb-1">출력 양식 선택</label>
             <select id="pdfModeSelect"
               class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-indigo-500 outline-none">
-              <option value="test_and_key">테스트지 + 정답표 (단어 순서 랜덤)</option>
-              <option value="test_only">단어 테스트지 (단어 순서 랜덤)</option>
-              <option value="retest_and_key">Retest 테스트지 + 정답표 (새 랜덤 순서)</option>
-              <option value="retest_only">Retest 단어 테스트지 (새 랜덤 순서)</option>
-              <option value="study_only">학습용 단어장 (원래 순서)</option>
+              <option value="study_only">단어장 (원래 순서 · 4열 표)</option>
+              <option value="test_only">Test (단어 순서 랜덤)</option>
+              <option value="retest_only">Retest (새 랜덤 순서)</option>
             </select>
           </div>
         </div>
@@ -245,6 +256,19 @@
           <span class="self-start px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 text-[11px] font-bold border border-emerald-200">
             7대 고정 규칙 자동 적용
           </span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label for="speaker1NameInput" class="block text-xs font-semibold text-slate-600 mb-1">Speaker 1 이름 (질문·튜터 역할)</label>
+            <input id="speaker1NameInput" type="text" value="엄마" placeholder="예: 엄마, 선생님"
+              class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none" />
+          </div>
+          <div>
+            <label for="speaker2NameInput" class="block text-xs font-semibold text-slate-600 mb-1">Speaker 2 이름 (대답·학습자 역할)</label>
+            <input id="speaker2NameInput" type="text" value="이안이" placeholder="예: 이안이, 민준이"
+              class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none" />
+          </div>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -294,28 +318,28 @@
       <div class="bg-white rounded-2xl border border-slate-200 p-4 sm:p-6 shadow-sm space-y-5">
         <div>
           <h2 class="text-base sm:text-lg font-bold text-slate-900">4. Google AI Studio TTS 음성 제작</h2>
-          <p class="text-xs sm:text-sm text-slate-500 mt-0.5">대본의 Speaker 1(엄마)과 Speaker 2(이안이)를 다중 화자 음성으로 합성합니다.</p>
+          <p id="step4SpeakerDesc" class="text-xs sm:text-sm text-slate-500 mt-0.5">대본의 Speaker 1(엄마)과 Speaker 2(이안이)를 다중 화자 음성으로 합성합니다.</p>
         </div>
 
         <!-- Voice Selection -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
-          <div>
-            <label for="speaker1Voice" class="block text-xs font-semibold text-slate-700 mb-1">Speaker 1 (엄마 튜터) 목소리</label>
-            <select id="speaker1Voice" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white outline-none">
-              <option value="Kore" selected>Kore (차분하고 명확한 여성)</option>
-              <option value="Sulafat">Sulafat (따뜻한 여성)</option>
-              <option value="Aoede">Aoede (산뜻하고 부드러운 여성)</option>
-              <option value="Vindemiatrix">Vindemiatrix (온화한 여성)</option>
-            </select>
+        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label for="speaker1Voice" id="speaker1VoiceLabel" class="block text-xs font-semibold text-slate-700 mb-1">Speaker 1 (엄마) 목소리</label>
+              <select id="speaker1Voice" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white outline-none"></select>
+            </div>
+            <div>
+              <label for="speaker2Voice" id="speaker2VoiceLabel" class="block text-xs font-semibold text-slate-700 mb-1">Speaker 2 (이안이) 목소리</label>
+              <select id="speaker2Voice" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white outline-none"></select>
+            </div>
           </div>
-          <div>
-            <label for="speaker2Voice" class="block text-xs font-semibold text-slate-700 mb-1">Speaker 2 (8살 이안이) 목소리</label>
-            <select id="speaker2Voice" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white outline-none">
-              <option value="Puck" selected>Puck (경쾌하고 밝은 소년)</option>
-              <option value="Leda">Leda (어리고 맑은 톤)</option>
-              <option value="Zephyr">Zephyr (밝고 활기찬 톤)</option>
-              <option value="Fenrir">Fenrir (에너지 넘치는 톤)</option>
-            </select>
+          <div class="flex items-center justify-between gap-2">
+            <span id="voiceCountNote" class="text-[11px] text-slate-500">기본 스튜디오 목소리 30종이 로드되었습니다.</span>
+            <button id="loadMoreVoicesBtn" type="button"
+              class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-300 bg-white hover:bg-slate-100 text-[11px] font-semibold text-slate-700 transition">
+              <i data-lucide="refresh-cw" class="w-3 h-3"></i>
+              확장 라이브러리 더 불러오기
+            </button>
           </div>
         </div>
 
@@ -424,6 +448,55 @@
     </div>
   </div>
 
+  <!-- Library Modal -->
+  <div id="libraryModal" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-white w-full sm:max-w-lg rounded-t-2xl sm:rounded-2xl p-5 sm:p-6 shadow-xl space-y-4 max-h-[85vh] flex flex-col">
+      <div class="flex items-center justify-between shrink-0">
+        <div>
+          <h3 class="text-base font-bold text-slate-900">내 단어장 보관함</h3>
+          <p class="text-[11px] text-slate-500">단어, 대본, 생성된 음성까지 현재 기기에 저장해 언제든 다시 쓸 수 있어요.</p>
+        </div>
+        <button id="closeLibraryBtn" type="button" class="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Save Current Session Box -->
+      <div class="bg-indigo-50/70 border border-indigo-200 rounded-xl p-3 space-y-2 shrink-0">
+        <label for="saveSetTitleInput" class="block text-xs font-semibold text-indigo-950">현재 작업 저장하기</label>
+        <div class="flex gap-2">
+          <input id="saveSetTitleInput" type="text" placeholder="예: GLP Reading Unit 11"
+            class="flex-1 rounded-lg border border-indigo-200 bg-white px-3 py-2 text-xs sm:text-sm outline-none focus:ring-2 focus:ring-indigo-500" />
+          <button id="saveCurrentSetBtn" type="button"
+            class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-semibold shrink-0 transition">
+            저장
+          </button>
+        </div>
+      </div>
+
+      <!-- Saved Items List -->
+      <div id="libraryListContainer" class="flex-1 overflow-y-auto space-y-2.5 pr-1 min-h-[140px]"></div>
+
+      <!-- Export / Import JSON for Cross-Device Backup -->
+      <div class="border-t border-slate-200 pt-3 flex flex-wrap items-center justify-between gap-2 shrink-0">
+        <span class="text-[11px] text-slate-500">다른 기기로 옮기려면 파일로 백업하세요.</span>
+        <div class="flex items-center gap-2">
+          <label for="importJsonInput"
+            class="cursor-pointer inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-slate-300 hover:bg-slate-50 text-xs font-semibold text-slate-700">
+            <i data-lucide="upload" class="w-3.5 h-3.5"></i>
+            불러오기(.json)
+          </label>
+          <input id="importJsonInput" type="file" accept="application/json,.json" class="hidden" />
+          <button id="exportJsonBtn" type="button"
+            class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-slate-300 hover:bg-slate-50 text-xs font-semibold text-slate-700">
+            <i data-lucide="download" class="w-3.5 h-3.5"></i>
+            백업(.json)
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast Notification -->
   <div id="toastEl" class="hidden fixed bottom-5 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-full bg-slate-900 text-white text-xs sm:text-sm font-medium shadow-lg transition"></div>
 
@@ -438,6 +511,8 @@
       words: [],  // { id, word, pos, en_def, ko_meaning, example }
       shuffledWords: [],
       isRetest: false,
+      discoveredTextModels: null,
+      discoveredTtsModels: null,
       script: '',
       wavBytes: null, // Uint8Array
       wavUrl: null
@@ -491,6 +566,95 @@
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;');
+    }
+
+    function normalizeWordItem(w, idx = 0) {
+      if (w && Array.isArray(w.senses) && w.senses.length > 0) {
+        return {
+          id: w.id || idx + 1,
+          word: w.word || '',
+          senses: w.senses.map((s) => ({
+            pos: s.pos || '',
+            ko_meaning: s.ko_meaning || '',
+            en_def: s.en_def || '',
+            example: s.example || ''
+          }))
+        };
+      }
+      const enLines = String(w?.en_def || '').split(/\n+/).map((x) => x.trim()).filter(Boolean);
+      const koLines = String(w?.ko_meaning || '').split(/\n+/).map((x) => x.trim()).filter(Boolean);
+      const count = Math.max(1, enLines.length, koLines.length);
+      const senses = [];
+      for (let i = 0; i < count; i++) {
+        senses.push({
+          pos: w?.pos || '',
+          ko_meaning: koLines[i] || koLines[0] || '',
+          en_def: enLines[i] || enLines[0] || '',
+          example: i === 0 ? (w?.example || '') : ''
+        });
+      }
+      return { id: w?.id || idx + 1, word: w?.word || '', senses };
+    }
+
+    function highlightWordHtml(sentence, word) {
+      const safe = escapeHtml(sentence || '');
+      const cleanWord = String(word || '').trim();
+      if (!cleanWord) return safe;
+      const escapedWord = cleanWord.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      return safe.replace(new RegExp(`\\b(${escapedWord}[a-z]*)\\b`, 'gi'), '<strong class="font-bold not-italic text-slate-900">$1</strong>');
+    }
+
+    function parseModelVersionScore(name) {
+      const m = String(name).match(/gemini-(\d+)(?:\.(\d+))?/i);
+      if (!m) return 0;
+      const major = parseInt(m[1], 10) || 0;
+      const minor = parseInt(m[2] || '0', 10) || 0;
+      let bonus = 0;
+      if (/flash(?!-lite)/i.test(name)) bonus += 0.05;
+      if (/pro/i.test(name)) bonus += 0.03;
+      if (/preview|exp/i.test(name)) bonus -= 0.01;
+      return major * 100 + minor + bonus;
+    }
+
+    async function discoverLatestModels() {
+      if (state.discoveredTextModels && state.discoveredTtsModels) {
+        return { textModels: state.discoveredTextModels, ttsModels: state.discoveredTtsModels };
+      }
+      const fallbackText = ['gemini-3.8-flash', 'gemini-3.6-flash', 'gemini-3.5-flash-lite', 'gemini-3.1-flash-lite'];
+      const fallbackTts = ['gemini-3.8-flash-tts', 'gemini-3.8-flash-lite-tts'];
+      try {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(state.apiKey.trim())}&pageSize=100`);
+        if (!res.ok) throw new Error('listModels failed');
+        const data = await res.json();
+        const models = Array.isArray(data.models) ? data.models : [];
+
+        const textList = models
+          .filter((m) => {
+            const id = (m.name || '').replace(/^models\//, '');
+            const methods = m.supportedGenerationMethods || [];
+            if (!methods.includes('generateContent')) return false;
+            if (!/^gemini-/i.test(id)) return false;
+            if (/(tts|live|embedding|image|vision|aqa|1\.0|1\.5|2\.0|2\.5)/i.test(id)) return false;
+            return /(flash|pro|argon)/i.test(id);
+          })
+          .map((m) => m.name.replace(/^models\//, ''))
+          .sort((a, b) => parseModelVersionScore(b) - parseModelVersionScore(a));
+
+        const ttsList = models
+          .filter((m) => {
+            const id = (m.name || '').replace(/^models\//, '');
+            return /^gemini-.*tts/i.test(id);
+          })
+          .map((m) => m.name.replace(/^models\//, ''))
+          .sort((a, b) => parseModelVersionScore(b) - parseModelVersionScore(a));
+
+        state.discoveredTextModels = [...new Set([...textList, ...fallbackText])];
+        state.discoveredTtsModels = [...new Set([...ttsList, ...fallbackTts])];
+      } catch (e) {
+        state.discoveredTextModels = fallbackText;
+        state.discoveredTtsModels = fallbackTts;
+      }
+      return { textModels: state.discoveredTextModels, ttsModels: state.discoveredTtsModels };
     }
 
     function loadSettings() {
@@ -563,6 +727,7 @@
 
     // ---------- Step 1: Words & Images ----------
     function renderWordCards() {
+      state.words = state.words.map((w, i) => normalizeWordItem(w, i));
       const container = document.getElementById('wordCardsContainer');
       document.getElementById('wordCountBadge').textContent = `${state.words.length}개`;
 
@@ -571,44 +736,80 @@
         return;
       }
 
-      container.innerHTML = state.words.map((w, idx) => `
-        <div class="border border-slate-200 rounded-xl p-3.5 bg-slate-50/60 space-y-2.5" data-word-idx="${idx}">
-          <div class="flex items-center justify-between gap-2">
-            <span class="text-xs font-bold text-indigo-600">#${idx + 1}</span>
-            <button type="button" onclick="removeWord(${idx})" class="text-xs text-rose-500 hover:text-rose-700 font-semibold">삭제</button>
-          </div>
-          <div class="grid grid-cols-3 gap-2">
-            <div class="col-span-2">
-              <label class="block text-[11px] font-semibold text-slate-500 mb-1">영단어</label>
-              <input type="text" value="${escapeHtml(w.word)}" onchange="updateWord(${idx}, 'word', this.value)"
-                placeholder="예: respect" class="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm font-bold text-slate-900" />
-            </div>
-            <div>
-              <label class="block text-[11px] font-semibold text-slate-500 mb-1">품사</label>
-              <input type="text" value="${escapeHtml(w.pos)}" onchange="updateWord(${idx}, 'pos', this.value)"
-                placeholder="n. / v." class="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm" />
-            </div>
-          </div>
-          <div>
-            <label class="block text-[11px] font-semibold text-slate-500 mb-1">영영 정의 (English)</label>
-            <textarea rows="2" onchange="updateWord(${idx}, 'en_def', this.value)"
-              placeholder="이미지에 있는 모든 영영 정의를 줄바꿈으로 구분해 입력"
-              class="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs sm:text-sm text-slate-800 leading-snug">${escapeHtml(w.en_def)}</textarea>
-          </div>
-          <div>
-            <label class="block text-[11px] font-semibold text-slate-500 mb-1">한국어 뜻 (Korean)</label>
-            <textarea rows="2" onchange="updateWord(${idx}, 'ko_meaning', this.value)"
-              placeholder="이미지에 있는 모든 한국어 뜻을 줄바꿈으로 구분해 입력"
-              class="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs sm:text-sm text-slate-800 leading-snug">${escapeHtml(w.ko_meaning)}</textarea>
-          </div>
+      const rowsHtml = state.words.map((w, idx) => {
+        const senses = w.senses && w.senses.length ? w.senses : [{ pos: '', ko_meaning: '', en_def: '', example: '' }];
+        const multi = senses.length > 1;
+        return senses.map((s, sIdx) => `
+          <tr class="border-b border-slate-300 align-top bg-white hover:bg-slate-50/40">
+            ${sIdx === 0 ? `
+              <td rowspan="${senses.length}" class="border-r border-slate-300 p-2.5 w-36 sm:w-44 bg-slate-50/50">
+                <div class="flex items-start gap-1">
+                  <span class="text-sm font-bold text-slate-900 pt-0.5">${idx + 1}.</span>
+                  <input type="text" value="${escapeHtml(w.word)}" onchange="updateWordName(${idx}, this.value)"
+                    placeholder="단어" class="w-full font-bold text-sm text-slate-900 bg-transparent border-b border-transparent focus:border-indigo-400 focus:bg-white px-1 py-0.5 outline-none rounded" />
+                </div>
+                <div class="mt-2 flex items-center gap-2 pl-4">
+                  <button type="button" onclick="addSense(${idx})" class="text-[10px] font-semibold text-indigo-600 hover:underline">+ 뜻 추가</button>
+                  <button type="button" onclick="removeWord(${idx})" class="text-[10px] font-semibold text-rose-500 hover:underline">삭제</button>
+                </div>
+              </td>
+            ` : ''}
+            <td class="border-r border-slate-300 p-2 w-36 sm:w-44">
+              <div class="flex items-start gap-1">
+                <input type="text" value="${escapeHtml(s.pos)}" onchange="updateSense(${idx}, ${sIdx}, 'pos', this.value)"
+                  placeholder="n." class="w-10 shrink-0 text-xs text-slate-700 bg-transparent border-b border-transparent focus:border-indigo-400 focus:bg-white px-1 py-0.5 outline-none rounded" />
+                <textarea rows="2" onchange="updateSense(${idx}, ${sIdx}, 'ko_meaning', this.value)"
+                  placeholder="한국어 뜻" class="w-full text-xs text-slate-900 font-medium bg-transparent border-b border-transparent focus:border-indigo-400 focus:bg-white px-1 py-0.5 outline-none rounded resize-none leading-snug">${escapeHtml(s.ko_meaning)}</textarea>
+              </div>
+              ${multi ? `<button type="button" onclick="removeSense(${idx}, ${sIdx})" class="mt-1 text-[10px] text-slate-400 hover:text-rose-500">이 뜻 삭제</button>` : ''}
+            </td>
+            <td class="p-2 w-20 text-xs leading-relaxed select-none">
+              <div class="font-bold text-slate-500">Meaning</div>
+              <div class="italic text-slate-400 mt-1.5">Example</div>
+            </td>
+            <td class="p-2 min-w-[260px]">
+              <div class="flex items-start gap-1">
+                ${multi ? `<span class="text-xs font-semibold text-slate-800 pt-0.5">${sIdx + 1}.</span>` : ''}
+                <textarea rows="2" onchange="updateSense(${idx}, ${sIdx}, 'en_def', this.value)"
+                  placeholder="영영 정의" class="w-full text-xs text-slate-900 bg-transparent border-b border-transparent focus:border-indigo-400 focus:bg-white px-1 py-0.5 outline-none rounded resize-none leading-snug">${escapeHtml(s.en_def)}</textarea>
+              </div>
+              <div class="flex items-start gap-1 mt-1">
+                <span class="text-xs italic text-slate-500 pt-0.5 shrink-0">Ex)</span>
+                <textarea rows="2" onchange="updateSense(${idx}, ${sIdx}, 'example', this.value)"
+                  placeholder="예문" class="w-full text-xs italic text-slate-600 bg-transparent border-b border-transparent focus:border-indigo-400 focus:bg-white px-1 py-0.5 outline-none rounded resize-none leading-snug">${escapeHtml(s.example)}</textarea>
+              </div>
+            </td>
+          </tr>
+        `).join('');
+      }).join('');
+
+      container.innerHTML = `
+        <div class="overflow-x-auto border border-slate-300 rounded-xl">
+          <table class="w-full border-collapse text-left min-w-[640px]">
+            <tbody>${rowsHtml}</tbody>
+          </table>
         </div>
-      `).join('');
+      `;
     }
 
-    window.updateWord = function (idx, field, val) {
-      if (state.words[idx]) state.words[idx][field] = val;
+    window.updateWordName = function (idx, val) {
+      if (state.words[idx]) state.words[idx].word = val;
     };
-
+    window.updateSense = function (idx, sIdx, field, val) {
+      if (state.words[idx]?.senses?.[sIdx]) state.words[idx].senses[sIdx][field] = val;
+    };
+    window.addSense = function (idx) {
+      if (state.words[idx]) {
+        state.words[idx].senses.push({ pos: '', ko_meaning: '', en_def: '', example: '' });
+        renderWordCards();
+      }
+    };
+    window.removeSense = function (idx, sIdx) {
+      if (state.words[idx] && state.words[idx].senses.length > 1) {
+        state.words[idx].senses.splice(sIdx, 1);
+        renderWordCards();
+      }
+    };
     window.removeWord = function (idx) {
       state.words.splice(idx, 1);
       renderWordCards();
@@ -780,17 +981,22 @@
             text: `You are a strict, verbatim English vocabulary extractor.
 Read EVERY line of the attached vocabulary image(s) and/or text carefully.
 CRITICAL RULES:
-1. NEVER omit or drop any meaning. If a word has 2 or more meanings or parts of speech in the image (e.g., "respect" having both "a good opinion of the worth or value..." AND another meaning, or both noun and verb meanings), extract EVERY SINGLE ONE of them.
-2. Separate multiple meanings inside "en_def" and "ko_meaning" with a newline ("\n") so each meaning sits cleanly on its own line (e.g., "n. a good opinion of the worth or value...\nv. to feel or show admiration for...").
+1. NEVER omit or drop any meaning or example sentence printed in the image. If a word has 2 or more meanings (e.g., "habit" or "respect" having 1. ... and 2. ...), extract EVERY SINGLE meaning as a separate item inside "senses".
+2. FILL MISSING DATA ACCURATELY (US ELEMENTARY LEVEL):
+   - If the uploaded image or text is missing any required field (e.g., missing English definition, missing Korean meaning, missing part of speech, or missing example sentence), YOU MUST generate and fill in the missing field(s) accurately using natural, idiomatic **US native English** appropriate for an **elementary school student (around Grade 2-5)**.
+   - Whenever the image ALREADY contains a field, preserve the image's exact text verbatim. Only generate what is missing.
 3. STRICT LANGUAGE SEPARATION:
-   - "en_def" MUST contain ONLY English definitions (never mix Korean into "en_def"). Copy every English definition printed in the image word-for-word without shortening.
-   - "ko_meaning" MUST contain ONLY Korean meanings (never mix English definitions into "ko_meaning"). Copy every Korean meaning printed in the image without shortening; if the image has only English definitions, translate ALL of those English definitions accurately into Korean line by line.
-4. Return ONLY a valid JSON array where each object has:
+   - "en_def" MUST contain ONLY the English definition (without numbering like "1.").
+   - "ko_meaning" MUST contain ONLY the Korean meaning (without part of speech).
+   - "pos" MUST contain the part of speech abbreviation (e.g. "n.", "v.", "adj.", "adv.", "prep.").
+   - "example" MUST contain the exact example sentence from the image (without "Ex)"), or a natural US elementary-level native English example sentence using the target word if absent.
+3. Return ONLY a valid JSON array where each object has:
 - "word": Exact English word (string)
-- "pos": All parts of speech shown, e.g. "n.", "v.", or "n. / v." (string)
-- "en_def": ALL English definitions from the image, separated by "\n" (string, English only)
-- "ko_meaning": ALL Korean meanings corresponding to every definition, separated by "\n" (string, Korean only)
-- "example": Example sentence from the image if present, or one short sentence (string)
+- "senses": Array of objects, one per meaning, each with:
+  - "pos": string
+  - "ko_meaning": string
+  - "en_def": string
+  - "example": string
 
 ${rawText ? 'Text input:\n' + rawText : ''}`
           }
@@ -800,8 +1006,8 @@ ${rawText ? 'Text input:\n' + rawText : ''}`
           parts.push({ inlineData: { mimeType: img.mimeType, data: img.base64 } });
         }
 
-        const candidateModels = [state.textModel, 'gemini-3.6-flash', 'gemini-3.5-flash-lite', 'gemini-3.1-flash-lite'];
-        const uniqueModels = [...new Set(candidateModels.filter(Boolean))];
+        const { textModels } = await discoverLatestModels();
+        const uniqueModels = [...new Set(textModels.filter(Boolean))];
         let data = null;
         let lastErr = null;
 
@@ -824,14 +1030,7 @@ ${rawText ? 'Text input:\n' + rawText : ''}`
         const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '[]';
         const parsed = parseJsonArraySafely(text);
 
-        state.words = parsed.map((item, idx) => ({
-          id: idx + 1,
-          word: item.word || '',
-          pos: item.pos || '',
-          en_def: item.en_def || '',
-          ko_meaning: item.ko_meaning || '',
-          example: item.example || ''
-        }));
+        state.words = parsed.map((item, idx) => normalizeWordItem(item, idx));
         renderWordCards();
         status.textContent = `${state.words.length}개 단어 추출 완료!`;
         setExtractAlert('success', `새로운 단어 ${state.words.length}개를 성공적으로 추출해 아래 리스트를 업데이트했습니다.`);
@@ -876,7 +1075,7 @@ ${rawText ? 'Text input:\n' + rawText : ''}`
       }
 
       const isStudyOnly = mode === 'study_only';
-      const isRetestMode = mode === 'retest_and_key' || mode === 'retest_only' || state.isRetest;
+      const isRetestMode = mode === 'retest_only' || state.isRetest;
       if (!isStudyOnly) ensureShuffledWords(false);
 
       const activeWords = isStudyOnly ? state.words : state.shuffledWords;
@@ -897,20 +1096,32 @@ ${rawText ? 'Text input:\n' + rawText : ''}`
           </div>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 text-xs">
             <div class="space-y-3">
-              ${leftWords.map((w, i) => `
-                <div>
-                  <p class="font-medium text-slate-900 whitespace-pre-line"><span class="font-bold">${i + 1}.</span> ${escapeHtml(w.pos)} ${escapeHtml(w.en_def)}</p>
-                  <div class="dashed-answer-line"></div>
-                </div>
-              `).join('')}
+              ${leftWords.map((rawW, i) => {
+                const w = normalizeWordItem(rawW, i);
+                const defHtml = w.senses.map((s, sIdx) =>
+                  `${w.senses.length > 1 ? `(${sIdx + 1}) ` : ''}${escapeHtml(s.pos)} ${escapeHtml(s.en_def)}`
+                ).join('<br/>');
+                return `
+                  <div>
+                    <p class="font-medium text-slate-900 leading-snug"><span class="font-bold">${i + 1}.</span> ${defHtml}</p>
+                    <div class="dashed-answer-line"></div>
+                  </div>
+                `;
+              }).join('')}
             </div>
             <div class="space-y-3">
-              ${rightWords.map((w, i) => `
-                <div>
-                  <p class="font-medium text-slate-900 whitespace-pre-line"><span class="font-bold">${half + i + 1}.</span> ${escapeHtml(w.pos)} ${escapeHtml(w.en_def)}</p>
-                  <div class="dashed-answer-line"></div>
-                </div>
-              `).join('')}
+              ${rightWords.map((rawW, i) => {
+                const w = normalizeWordItem(rawW, half + i);
+                const defHtml = w.senses.map((s, sIdx) =>
+                  `${w.senses.length > 1 ? `(${sIdx + 1}) ` : ''}${escapeHtml(s.pos)} ${escapeHtml(s.en_def)}`
+                ).join('<br/>');
+                return `
+                  <div>
+                    <p class="font-medium text-slate-900 leading-snug"><span class="font-bold">${half + i + 1}.</span> ${defHtml}</p>
+                    <div class="dashed-answer-line"></div>
+                  </div>
+                `;
+              }).join('')}
             </div>
           </div>
         </div>
@@ -918,38 +1129,46 @@ ${rawText ? 'Text input:\n' + rawText : ''}`
 
       const studyBlock = `
         <div class="${mode === 'test_and_key' ? 'page-break pt-6' : ''}">
-          <div class="flex items-center justify-between border-b-2 border-indigo-700 pb-2.5 mb-4">
-            <h2 class="text-lg font-bold text-indigo-950">${escapeHtml(displayTitle)} - 단어장 &amp; 정답표</h2>
+          <div class="flex items-center justify-between border-b-2 border-slate-700 pb-2.5 mb-4">
+            <h2 class="text-lg font-bold text-slate-900">${escapeHtml(baseTitle)} - 단어장</h2>
             <span class="text-xs font-semibold text-slate-500">총 ${total}단어</span>
           </div>
-          <table class="w-full text-xs border-collapse">
+          <table class="w-full text-[11px] border-collapse border border-slate-300">
             <thead>
-              <tr class="bg-slate-100 border-y border-slate-300 text-left">
-                <th class="py-2 px-2 w-8">#</th>
-                <th class="py-2 px-2 w-28">Word</th>
-                <th class="py-2 px-2 w-12">품사</th>
-                <th class="py-2 px-2">English Definition</th>
-                <th class="py-2 px-2 w-36">한국어 뜻</th>
+              <tr style="background-color: #3f4a59;" class="text-white text-center font-bold">
+                <th class="border border-slate-400 py-2 px-2 w-32">Word</th>
+                <th class="border border-slate-400 py-2 px-2 w-32">Korean Meaning</th>
+                <th colspan="2" class="border border-slate-400 py-2 px-2">Definition &amp; Example</th>
               </tr>
             </thead>
             <tbody>
-              ${activeWords.map((w, i) => `
-                <tr class="border-b border-slate-200">
-                  <td class="py-1.5 px-2 text-slate-500 font-semibold">${i + 1}</td>
-                  <td class="py-1.5 px-2 font-bold text-slate-900">${escapeHtml(w.word)}</td>
-                  <td class="py-1.5 px-2 text-slate-600">${escapeHtml(w.pos)}</td>
-                  <td class="py-1.5 px-2 text-slate-700 whitespace-pre-line">${escapeHtml(w.en_def)}</td>
-                  <td class="py-1.5 px-2 text-slate-900 font-medium whitespace-pre-line">${escapeHtml(w.ko_meaning)}</td>
-                </tr>
-              `).join('')}
+              ${activeWords.map((rawW, i) => {
+                const w = normalizeWordItem(rawW, i);
+                const multi = w.senses.length > 1;
+                return w.senses.map((s, sIdx) => `
+                  <tr class="border-b border-slate-300 align-top">
+                    ${sIdx === 0 ? `
+                      <td rowspan="${w.senses.length}" class="border-r border-slate-300 p-2 font-bold text-slate-900 w-32 bg-slate-50/40">${i + 1}. ${escapeHtml(w.word)}</td>
+                    ` : ''}
+                    <td class="border-r border-slate-300 p-2 w-32 text-slate-800">${escapeHtml(s.pos)} ${escapeHtml(s.ko_meaning)}</td>
+                    <td class="p-2 w-16 leading-snug">
+                      <div class="font-bold text-slate-500">Meaning</div>
+                      <div class="italic text-slate-400 mt-1">Example</div>
+                    </td>
+                    <td class="p-2 leading-snug">
+                      <div class="text-slate-900">${multi ? `${sIdx + 1}. ` : ''}${escapeHtml(s.en_def)}</div>
+                      ${s.example ? `<div class="italic text-slate-600 mt-1">Ex) ${highlightWordHtml(s.example, w.word)}</div>` : ''}
+                    </td>
+                  </tr>
+                `).join('');
+              }).join('')}
             </tbody>
           </table>
         </div>
       `;
 
-      if (mode === 'test_only' || mode === 'retest_only') container.innerHTML = testBlock;
-      else if (mode === 'study_only') container.innerHTML = studyBlock;
-      else container.innerHTML = testBlock + studyBlock;
+      if (mode === 'study_only') container.innerHTML = studyBlock;
+      else container.innerHTML = testBlock;
     }
 
     // ---------- Step 3: Script Generation (7 Fixed Rules) ----------
@@ -970,8 +1189,14 @@ ${rawText ? 'Text input:\n' + rawText : ''}`
       btn.innerHTML = '<span>대본 작성 중...</span>';
 
       const theme = document.getElementById('storyThemeInput').value.trim();
+      const speaker1Name = document.getElementById('speaker1NameInput').value.trim() || '엄마';
+      const speaker2Name = document.getElementById('speaker2NameInput').value.trim() || '이안이';
       const wordListStr = state.words
-        .map((w) => `${w.word} (${w.pos}) - Korean: ${w.ko_meaning} / English definition: ${w.en_def}`)
+        .map((rawW, i) => {
+          const w = normalizeWordItem(rawW, i);
+          const sensesText = w.senses.map((s, idx) => `[Meaning ${idx + 1}] (${s.pos}) Korean: ${s.ko_meaning} / English: ${s.en_def}`).join(' | ');
+          return `${w.word}: ${sensesText}`;
+        })
         .join('\n');
 
       const prompt = `다음 영어 단어 목록을 바탕으로 'Google AI Studio Multi-speaker TTS 전용 팟캐스트 대본'을 작성해 줘.
@@ -980,23 +1205,24 @@ ${theme ? `스토리 테마: ${theme}` : '스토리 테마: 주어진 단어들�
 [반드시 지켜야 할 팟캐스트 대본 생성 고정 규칙 7가지]
 1. 출력 구조: 반드시 [Scene], [Sample Context], [Script] 세 영역으로만 출력해 줘. (바깥을 마크다운 코드블록으로 감싸지 말고 바로 [Scene]으로 시작해.)
 2. 음성 및 음량 고정 ([Scene] 설정):
-  - Speaker 1은 30대 영어 튜터 엄마(따뜻하고 명확하며 격려하는 톤), Speaker 2는 8살 남자아이 이안이(밝고 에너지 넘치며 맑은 소년 목소리)로 설정해.
+  - Speaker 1은 ${speaker1Name}(따뜻하고 명확하며 격려하는 30대 튜터 톤), Speaker 2는 ${speaker2Name}(밝고 에너지 넘치며 맑은 8살 어린이 목소리)로 설정해.
   - 대화 도중 목소리 톤이나 음량이 작아지지 않고 처음부터 끝까지 크고 일정하게(Consistent high volume level) 유지되도록 영문 지시문을 넣어줘.
   - 속도는 8살 아이가 따라 읽기 편한 보통 빠르기(Moderate and relaxed pace)로 지정해.
 3. 발음 설정: 한국어 대화는 자연스러운 엄마와 아들의 구어체로, 모든 영단어·영영 정의·알파벳 스펠링은 정확한 미국 표준 원어민 발음(Crisp native US English standard accent)으로 읽도록 [Scene]에 명시해.
 4. 화자 태그 엄수: [Script] 본문에서는 대괄호([Mom], [Ian])를 절대 쓰지 말고, 오직 'Speaker 1: '과 'Speaker 2: '(콜론 뒤 한 칸 띄어쓰기)만 사용해.
 5. 스토리텔링 및 번호 제거: '1번', '첫 번째' 같은 순서 번호를 완전히 지우고, 주어진 단어 전체를 하나의 흥미진진한 테마 모험 스토리로 자연스럽게 연결해. (다의어인 경우 모든 뜻을 각각 질문에 포함)
 6. 티키타카 학습 진행 순서:
-  - 엄마(Speaker 1): 정답을 먼저 말하지 않고 스토리 속 상황 + 한국어 뜻 + 영영 정의를 들려주며 질문
-  - 아이(Speaker 2): 정답 단어와 뜻을 대답하고, 해당 단어의 알파벳 전체를 하나씩 끊어 읽음 (예: T-R-E-A-T, treat!)
-  - 엄마(Speaker 1): 정답 확인 후 시험에 자주 틀리는 핵심 스펠링 포인트(묵음, double 철자, 모음 배열 등)만 콕 짚어 설명
+  - ${speaker1Name}(Speaker 1): 정답을 먼저 말하지 않고 스토리 속 상황 + 한국어 뜻 + 영영 정의를 들려주며 질문
+  - ${speaker2Name}(Speaker 2): 정답 단어와 뜻을 대답하고, 해당 단어의 알파벳 전체를 하나씩 끊어 읽음 (예: T-R-E-A-T, treat!)
+  - ${speaker1Name}(Speaker 1): 정답 확인 후 시험에 자주 틀리는 핵심 스펠링 포인트(묵음, double 철자, 모음 배열 등)만 콕 짚어 설명
 7. TTS 오독 방지 (완전한 Plain Text): [Script] 본문에는 마크다운(**, #), 괄호 (), 슬래시 /, 특수기호, 아라비아 숫자(10개 -> 열 개)를 절대 넣지 말고 순수 평문으로만 작성해. 마지막은 하이파이브와 백 점 응원 인사로 마무리해 줘.
 
 [단어 목록]
 ${wordListStr}`;
 
       try {
-        const candidateModels = [...new Set([state.textModel, 'gemini-3.6-flash', 'gemini-3.5-flash-lite', 'gemini-3.1-flash-lite'].filter(Boolean))];
+        const { textModels } = await discoverLatestModels();
+        const candidateModels = [...new Set(textModels.filter(Boolean))];
         let data = null;
         let lastErr = null;
         for (const modelName of candidateModels) {
@@ -1113,13 +1339,14 @@ ${wordListStr}`;
           type: 'speech_metadata',
           speaker: t.speaker,
           style: t.speaker === 'Speaker 1'
-            ? '30s warm encouraging English tutor mom, consistent high volume level, moderate and relaxed pace, crisp native US English accent for English words'
-            : '8-year-old bright energetic boy Ian, consistent high volume level, moderate and relaxed pace, crisp native US English accent for English words'
+            ? `30s warm encouraging English tutor (${document.getElementById('speaker1NameInput').value.trim() || '엄마'}), consistent high volume level, moderate and relaxed pace, crisp native US English accent for English words`
+            : `8-year-old bright energetic child (${document.getElementById('speaker2NameInput').value.trim() || '이안이'}), consistent high volume level, moderate and relaxed pace, crisp native US English accent for English words`
         }]
       }));
 
       try {
-        const ttsCandidates = [...new Set([state.ttsModel, 'gemini-3.8-flash-lite-tts'].filter(Boolean))];
+        const { ttsModels } = await discoverLatestModels();
+        const ttsCandidates = [...new Set(ttsModels.filter(Boolean))];
         let data = null;
         let lastErr = null;
         for (const ttsModelName of ttsCandidates) {
@@ -1251,6 +1478,341 @@ ${wordListStr}`;
       showToast(msg);
     }
 
+    // ---------- IndexedDB Library Storage ----------
+    const DB_NAME = 'ian_vocab_studio_db';
+    const STORE_NAME = 'sets';
+
+    function openLibraryDb() {
+      return new Promise((resolve, reject) => {
+        if (!window.indexedDB) {
+          reject(new Error('IndexedDB를 지원하지 않는 브라우저입니다.'));
+          return;
+        }
+        const req = indexedDB.open(DB_NAME, 1);
+        req.onupgradeneeded = () => {
+          const db = req.result;
+          if (!db.objectStoreNames.contains(STORE_NAME)) {
+            db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+          }
+        };
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    const LS_LIB_KEY = 'ian_vocab_library_fallback';
+
+    function getFallbackSets() {
+      try {
+        const raw = localStorage.getItem(LS_LIB_KEY);
+        const arr = raw ? JSON.parse(raw) : [];
+        return Array.isArray(arr) ? arr.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0)) : [];
+      } catch (e) { return []; }
+    }
+
+    async function getAllSavedSets() {
+      try {
+        const db = await openLibraryDb();
+        return await new Promise((resolve, reject) => {
+          const tx = db.transaction(STORE_NAME, 'readonly');
+          const store = tx.objectStore(STORE_NAME);
+          const req = store.getAll();
+          req.onsuccess = () => {
+            const list = req.result || [];
+            list.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+            resolve(list);
+          };
+          req.onerror = () => reject(req.error);
+        });
+      } catch (e) {
+        return getFallbackSets();
+      }
+    }
+
+    async function putSavedSet(record) {
+      try {
+        const db = await openLibraryDb();
+        return await new Promise((resolve, reject) => {
+          const tx = db.transaction(STORE_NAME, 'readwrite');
+          tx.objectStore(STORE_NAME).put(record);
+          tx.oncomplete = () => resolve();
+          tx.onerror = () => reject(tx.error);
+        });
+      } catch (e) {
+        const list = getFallbackSets().filter((x) => x.id !== record.id);
+        const slim = { ...record, wavBase64: '' };
+        list.unshift(slim);
+        localStorage.setItem(LS_LIB_KEY, JSON.stringify(list));
+      }
+    }
+
+    async function deleteSavedSet(id) {
+      try {
+        const db = await openLibraryDb();
+        return await new Promise((resolve, reject) => {
+          const tx = db.transaction(STORE_NAME, 'readwrite');
+          tx.objectStore(STORE_NAME).delete(id);
+          tx.oncomplete = () => resolve();
+          tx.onerror = () => reject(tx.error);
+        });
+      } catch (e) {
+        const list = getFallbackSets().filter((x) => x.id !== id);
+        localStorage.setItem(LS_LIB_KEY, JSON.stringify(list));
+      }
+    }
+
+    async function refreshLibraryCount() {
+      const list = await getAllSavedSets();
+      document.getElementById('libraryCountBadge').textContent = String(list.length);
+      return list;
+    }
+
+    async function renderLibraryModal() {
+      const titleInput = document.getElementById('saveSetTitleInput');
+      if (!titleInput.value.trim()) {
+        titleInput.value = document.getElementById('pdfTitleInput').value.trim() || `단어장 ${new Date().toLocaleDateString('ko-KR')}`;
+      }
+      const list = await refreshLibraryCount();
+      const container = document.getElementById('libraryListContainer');
+      if (list.length === 0) {
+        container.innerHTML = `<div class="text-center py-8 text-xs text-slate-400">저장된 단어장이 없습니다. 위에서 현재 작업을 저장해 보세요!</div>`;
+        return;
+      }
+      container.innerHTML = list.map((item) => {
+        const dateStr = new Date(item.updatedAt || Date.now()).toLocaleString('ko-KR', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+        const hasScript = Boolean(item.script && item.script.trim());
+        const hasAudio = Boolean(item.wavBase64);
+        return `
+          <div class="border border-slate-200 rounded-xl p-3 bg-slate-50/70 flex items-center justify-between gap-3">
+            <div class="min-w-0">
+              <p class="text-xs sm:text-sm font-bold text-slate-900 truncate">${escapeHtml(item.title)}</p>
+              <div class="flex flex-wrap items-center gap-1.5 mt-1 text-[10px] font-semibold">
+                <span class="px-1.5 py-0.5 rounded bg-white border border-slate-200 text-slate-700">${(item.words || []).length}단어</span>
+                ${hasScript ? '<span class="px-1.5 py-0.5 rounded bg-emerald-50 border border-emerald-200 text-emerald-700">대본 있음</span>' : ''}
+                ${hasAudio ? '<span class="px-1.5 py-0.5 rounded bg-indigo-50 border border-indigo-200 text-indigo-700">음성 있음</span>' : ''}
+                <span class="text-slate-400 font-normal">${dateStr}</span>
+              </div>
+            </div>
+            <div class="flex items-center gap-1.5 shrink-0">
+              <button type="button" onclick="loadLibraryItem('${escapeHtml(item.id)}')"
+                class="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold">불러오기</button>
+              <button type="button" onclick="removeLibraryItem('${escapeHtml(item.id)}')"
+                class="px-2 py-1.5 rounded-lg text-rose-500 hover:bg-rose-50 text-xs font-semibold">삭제</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function saveCurrentSetToLibrary() {
+      if (state.words.length === 0 && !document.getElementById('scriptTextarea').value.trim()) {
+        showToast('저장할 단어나 대본이 없습니다.');
+        return;
+      }
+      const title = document.getElementById('saveSetTitleInput').value.trim()
+        || document.getElementById('pdfTitleInput').value.trim()
+        || `단어장 ${new Date().toLocaleDateString('ko-KR')}`;
+
+      let wavBase64 = '';
+      if (state.wavBytes && state.wavBytes.length > 0) {
+        let bin = '';
+        const chunk = 0x8000;
+        for (let i = 0; i < state.wavBytes.length; i += chunk) {
+          bin += String.fromCharCode.apply(null, state.wavBytes.subarray(i, i + chunk));
+        }
+        wavBase64 = btoa(bin);
+      }
+
+      const record = {
+        id: 'set_' + Date.now(),
+        title,
+        pdfTitle: document.getElementById('pdfTitleInput').value.trim() || title,
+        words: JSON.parse(JSON.stringify(state.words)),
+        script: document.getElementById('scriptTextarea').value,
+        wavBase64,
+        updatedAt: Date.now()
+      };
+
+      try {
+        await putSavedSet(record);
+        await renderLibraryModal();
+        showToast(`'${title}' 세트를 보관함에 저장했습니다.`);
+      } catch (err) {
+        showToast(`저장 오류: ${err.message}`);
+      }
+    }
+
+    window.loadLibraryItem = async function (id) {
+      const list = await getAllSavedSets();
+      const item = list.find((x) => x.id === id);
+      if (!item) return;
+
+      state.words = (item.words || []).map((w) => ({ ...w }));
+      state.shuffledWords = [];
+      state.isRetest = false;
+      document.getElementById('pdfTitleInput').value = item.pdfTitle || item.title || 'Vocabulary Test';
+      state.script = item.script || '';
+      document.getElementById('scriptTextarea').value = state.script;
+      if (state.script) validateScriptRules(state.script);
+
+      if (item.wavBase64) {
+        const binary = atob(item.wavBase64);
+        const bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+        state.wavBytes = bytes;
+        if (state.wavUrl) URL.revokeObjectURL(state.wavUrl);
+        state.wavUrl = URL.createObjectURL(new Blob([bytes], { type: 'audio/wav' }));
+        document.getElementById('audioPlayer').src = state.wavUrl;
+        document.getElementById('audioResultBox').classList.remove('hidden');
+      } else {
+        state.wavBytes = null;
+        document.getElementById('audioResultBox').classList.add('hidden');
+      }
+
+      renderWordCards();
+      renderPdfPreview();
+      document.getElementById('libraryModal').classList.add('hidden');
+      showToast(`'${item.title}' 세트를 불러왔습니다.`);
+    };
+
+    window.removeLibraryItem = async function (id) {
+      await deleteSavedSet(id);
+      await renderLibraryModal();
+      showToast('보관함에서 삭제했습니다.');
+    };
+
+    function exportCurrentSetAsJson() {
+      if (state.words.length === 0 && !document.getElementById('scriptTextarea').value.trim()) {
+        showToast('내보낼 단어나 대본이 없습니다.');
+        return;
+      }
+      const title = document.getElementById('pdfTitleInput').value.trim() || 'vocab_set';
+      const payload = {
+        version: '2.1',
+        title,
+        words: state.words,
+        script: document.getElementById('scriptTextarea').value,
+        exportedAt: new Date().toISOString()
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${title.replace(/[\\/:*?"<>|]/g, '_')}.json`;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 3000);
+      showToast('백업 JSON 파일을 저장했습니다.');
+    }
+
+    async function importSetFromJson(file) {
+      if (!file) return;
+      try {
+        const text = await file.text();
+        const data = JSON.parse(text);
+        if (!Array.isArray(data.words)) throw new Error('올바른 단어장 백업 파일이 아닙니다.');
+        state.words = data.words;
+        state.shuffledWords = [];
+        state.isRetest = false;
+        if (data.title) document.getElementById('pdfTitleInput').value = data.title;
+        if (typeof data.script === 'string') {
+          state.script = data.script;
+          document.getElementById('scriptTextarea').value = data.script;
+          if (data.script) validateScriptRules(data.script);
+        }
+        renderWordCards();
+        renderPdfPreview();
+        document.getElementById('libraryModal').classList.add('hidden');
+        showToast(`백업 파일에서 ${state.words.length}개 단어를 불러왔습니다.`);
+      } catch (err) {
+        showToast(`불러오기 실패: ${err.message}`);
+      }
+    }
+
+    // ---------- Gemini TTS Voices (30 Prebuilt + Extended Library) ----------
+    const PREBUILT_VOICES = [
+      { id: 'Kore', label: 'Kore — 또렷하고 안정적인 (여성 추천)' },
+      { id: 'Sulafat', label: 'Sulafat — 따뜻하고 다정한 (여성 추천)' },
+      { id: 'Aoede', label: 'Aoede — 산뜻하고 부드러운 (여성 추천)' },
+      { id: 'Vindemiatrix', label: 'Vindemiatrix — 온화하고 차분한 (여성 추천)' },
+      { id: 'Achernar', label: 'Achernar — 포근하고 부드러운 (여성 추천)' },
+      { id: 'Despina', label: 'Despina — 매끄럽고 유려한' },
+      { id: 'Callirrhoe', label: 'Callirrhoe — 편안하고 자연스러운' },
+      { id: 'Erinome', label: 'Erinome — 깔끔하고 명료한' },
+      { id: 'Puck', label: 'Puck — 경쾌하고 밝은 (아이·소년 추천)' },
+      { id: 'Leda', label: 'Leda — 어리고 맑은 톤 (아이 추천)' },
+      { id: 'Zephyr', label: 'Zephyr — 밝고 활기찬 (아이 추천)' },
+      { id: 'Laomedeia', label: 'Laomedeia — 명랑하고 경쾌한' },
+      { id: 'Fenrir', label: 'Fenrir — 에너지 넘치는' },
+      { id: 'Sadachbia', label: 'Sadachbia — 생기 발랄한' },
+      { id: 'Autonoe', label: 'Autonoe — 맑고 밝은' },
+      { id: 'Achird', label: 'Achird — 다정하고 친근한' },
+      { id: 'Charon', label: 'Charon — 차분하고 설명적인' },
+      { id: 'Iapetus', label: 'Iapetus — 선명한 발음' },
+      { id: 'Orus', label: 'Orus — 단단하고 명확한' },
+      { id: 'Umbriel', label: 'Umbriel — 여유로운' },
+      { id: 'Algieba', label: 'Algieba — 부드러운 중저음' },
+      { id: 'Enceladus', label: 'Enceladus — 부드럽고 속삭이는 듯한' },
+      { id: 'Algenib', label: 'Algenib — 중후한 톤' },
+      { id: 'Rasalgethi', label: 'Rasalgethi — 지적인 설명 톤' },
+      { id: 'Alnilam', label: 'Alnilam — 힘 있는 톤' },
+      { id: 'Schedar', label: 'Schedar — 고르고 안정적인' },
+      { id: 'Gacrux', label: 'Gacrux — 성숙한 톤' },
+      { id: 'Pulcherrima', label: 'Pulcherrima — 또렷하고 적극적인' },
+      { id: 'Zubenelgenubi', label: 'Zubenelgenubi — 자연스럽고 캐주얼한' },
+      { id: 'Sadaltager', label: 'Sadaltager — 박식하고 신뢰감 있는' }
+    ];
+
+    function populateVoiceSelects(extraVoices = []) {
+      const s1 = document.getElementById('speaker1Voice');
+      const s2 = document.getElementById('speaker2Voice');
+      const prev1 = s1.value || 'Kore';
+      const prev2 = s2.value || 'Puck';
+      const all = [...PREBUILT_VOICES, ...extraVoices];
+      const optionsHtml = all.map((v) => `<option value="${escapeHtml(v.id)}">${escapeHtml(v.label)}</option>`).join('');
+      s1.innerHTML = optionsHtml;
+      s2.innerHTML = optionsHtml;
+      s1.value = all.some((v) => v.id === prev1) ? prev1 : 'Kore';
+      s2.value = all.some((v) => v.id === prev2) ? prev2 : 'Puck';
+    }
+
+    function syncSpeakerLabels() {
+      const n1 = document.getElementById('speaker1NameInput').value.trim() || '엄마';
+      const n2 = document.getElementById('speaker2NameInput').value.trim() || '이안이';
+      document.getElementById('speaker1VoiceLabel').textContent = `Speaker 1 (${n1}) 목소리`;
+      document.getElementById('speaker2VoiceLabel').textContent = `Speaker 2 (${n2}) 목소리`;
+      const desc = document.getElementById('step4SpeakerDesc');
+      if (desc) desc.textContent = `대본의 Speaker 1(${n1})과 Speaker 2(${n2})를 다중 화자 음성으로 합성합니다.`;
+    }
+
+    async function loadExtendedVoiceLibrary() {
+      if (!state.apiKey.trim()) {
+        showToast('먼저 상단에서 API 키를 저장해 주세요.');
+        return;
+      }
+      const btn = document.getElementById('loadMoreVoicesBtn');
+      btn.disabled = true;
+      try {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/voices?key=${encodeURIComponent(state.apiKey.trim())}&pageSize=100`);
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error?.message || '목소리 목록을 불러오지 못했습니다.');
+        const existingIds = new Set(PREBUILT_VOICES.map((v) => v.id));
+        const extra = (data.voices || [])
+          .filter((v) => v.id && !existingIds.has(v.id))
+          .slice(0, 70)
+          .map((v) => ({
+            id: v.id,
+            label: `${v.display_name || v.id} (${[v.gender, v.accent, v.pitch].filter(Boolean).join(', ') || 'Library'})`
+          }));
+        populateVoiceSelects(extra);
+        document.getElementById('voiceCountNote').textContent = `기본 30종 + 확장 라이브러리 ${extra.length}종 로드 완료`;
+        showToast(`확장 목소리 ${extra.length}종을 추가했습니다!`);
+      } catch (err) {
+        showToast(`불러오기 실패: ${err.message}`);
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
     // ---------- Init & Listeners ----------
     function initApp() {
       if (window.__ianAppInitialized) return;
@@ -1316,7 +1878,7 @@ ${wordListStr}`;
         showToast('단어 리스트를 모두 비웠습니다.');
       });
       document.getElementById('addWordRowBtn').addEventListener('click', () => {
-        state.words.push({ id: state.words.length + 1, word: '', pos: '', en_def: '', ko_meaning: '', example: '' });
+        state.words.push({ id: state.words.length + 1, word: '', senses: [{ pos: '', ko_meaning: '', en_def: '', example: '' }] });
         renderWordCards();
       });
 
@@ -1327,7 +1889,7 @@ ${wordListStr}`;
       document.getElementById('pdfTitleInput').addEventListener('input', renderPdfPreview);
       document.getElementById('pdfModeSelect').addEventListener('change', (e) => {
         const val = e.target.value;
-        if (val === 'retest_and_key' || val === 'retest_only') {
+        if (val === 'retest_only') {
           state.isRetest = true;
           ensureShuffledWords(true);
           showToast('Retest용으로 단어 순서를 새로 섞었습니다.');
@@ -1343,7 +1905,7 @@ ${wordListStr}`;
         }
         state.isRetest = true;
         const sel = document.getElementById('pdfModeSelect');
-        if (sel.value === 'study_only') sel.value = 'retest_and_key';
+        if (sel.value === 'study_only' || sel.value === 'test_only') sel.value = 'retest_only';
         ensureShuffledWords(true);
         renderPdfPreview();
         showToast('단어 순서를 랜덤으로 다시 섞었습니다!');
@@ -1399,6 +1961,30 @@ ${wordListStr}`;
       document.getElementById('downloadMp3Btn').addEventListener('click', downloadMp3);
       document.getElementById('copyFfmpegBtn').addEventListener('click', () => {
         copyTextFallback(document.getElementById('ffmpegCmd').textContent, 'ffmpeg 명령어를 복사했습니다.');
+      });
+
+      populateVoiceSelects();
+      syncSpeakerLabels();
+      document.getElementById('speaker1NameInput').addEventListener('input', syncSpeakerLabels);
+      document.getElementById('speaker2NameInput').addEventListener('input', syncSpeakerLabels);
+      document.getElementById('loadMoreVoicesBtn').addEventListener('click', loadExtendedVoiceLibrary);
+      refreshLibraryCount();
+      document.getElementById('openLibraryBtn').addEventListener('click', async () => {
+        await renderLibraryModal();
+        document.getElementById('libraryModal').classList.remove('hidden');
+      });
+      document.getElementById('saveToLibraryQuickBtn').addEventListener('click', async () => {
+        await renderLibraryModal();
+        document.getElementById('libraryModal').classList.remove('hidden');
+      });
+      document.getElementById('closeLibraryBtn').addEventListener('click', () => {
+        document.getElementById('libraryModal').classList.add('hidden');
+      });
+      document.getElementById('saveCurrentSetBtn').addEventListener('click', saveCurrentSetToLibrary);
+      document.getElementById('exportJsonBtn').addEventListener('click', exportCurrentSetAsJson);
+      document.getElementById('importJsonInput').addEventListener('change', (e) => {
+        importSetFromJson(e.target.files[0]);
+        e.target.value = '';
       });
     }
 
