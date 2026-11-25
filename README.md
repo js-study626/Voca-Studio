@@ -1,4 +1,4 @@
-# 단어 팟캐스트 스튜디오 (Ian's Vocab Podcast Studio)
+# 단어 팟캐스트 스튜디오 (Voca Podcast Studio)
 
 이미지 업로드만으로 영어 단어장·테스트지 PDF와 엄마·아이 퀴즈 팟캐스트 대본 및 음성을 한 번에 만드는 모바일·PC 겸용 웹 앱입니다.
 
