@@ -1,0 +1,1412 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>이안이의 단어 팟캐스트 스튜디오</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Inter', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .dashed-answer-line {
+      border-bottom: 1.5px dashed #94a3b8;
+      height: 22px;
+      margin-top: 4px;
+    }
+    @media print {
+      body * {
+        visibility: hidden !important;
+      }
+      #printArea, #printArea * {
+        visibility: visible !important;
+      }
+      #printArea {
+        position: absolute !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 12mm 14mm !important;
+        box-shadow: none !important;
+        border: none !important;
+        background: white !important;
+      }
+      .page-break {
+        page-break-before: always;
+        break-before: page;
+      }
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+  <!-- Top Navigation -->
+  <header class="sticky top-0 z-30 bg-white/90 backdrop-blur border-b border-slate-200">
+    <div class="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between gap-2">
+      <div class="flex items-center gap-2.5 min-w-0">
+        <div class="w-9 h-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center shrink-0 shadow-sm">
+          <i data-lucide="headphones" class="w-5 h-5"></i>
+        </div>
+        <div class="min-w-0">
+          <div class="flex items-center gap-1.5 min-w-0">
+            <h1 class="text-sm sm:text-base font-bold text-slate-900 truncate">단어 팟캐스트 스튜디오</h1>
+            <span class="px-1.5 py-0.5 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-200 text-[10px] font-bold shrink-0">v2.0</span>
+          </div>
+          <p class="text-[11px] text-slate-500 truncate hidden sm:block">이미지 업로드 → PDF 단어장 → 퀴즈 대본 → AI 오디오</p>
+        </div>
+      </div>
+
+      <button id="openSettingsBtn" type="button"
+        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition shrink-0">
+        <span id="apiStatusDot" class="w-2 h-2 rounded-full bg-amber-500"></span>
+        <span id="apiStatusText">API 키 설정</span>
+        <i data-lucide="settings" class="w-3.5 h-3.5"></i>
+      </button>
+    </div>
+
+    <!-- Step Tabs -->
+    <nav class="max-w-5xl mx-auto px-2 sm:px-4 flex border-t border-slate-100 overflow-x-auto no-scrollbar">
+      <button type="button" data-step="1" class="step-tab flex-1 min-w-[78px] py-2.5 px-2 text-xs sm:text-sm font-semibold border-b-2 transition flex items-center justify-center gap-1.5">
+        <span class="w-5 h-5 rounded-full text-[11px] flex items-center justify-center font-bold">1</span>
+        <span>단어 입력</span>
+      </button>
+      <button type="button" data-step="2" class="step-tab flex-1 min-w-[78px] py-2.5 px-2 text-xs sm:text-sm font-semibold border-b-2 transition flex items-center justify-center gap-1.5">
+        <span class="w-5 h-5 rounded-full text-[11px] flex items-center justify-center font-bold">2</span>
+        <span>PDF 생성</span>
+      </button>
+      <button type="button" data-step="3" class="step-tab flex-1 min-w-[78px] py-2.5 px-2 text-xs sm:text-sm font-semibold border-b-2 transition flex items-center justify-center gap-1.5">
+        <span class="w-5 h-5 rounded-full text-[11px] flex items-center justify-center font-bold">3</span>
+        <span>퀴즈 대본</span>
+      </button>
+      <button type="button" data-step="4" class="step-tab flex-1 min-w-[78px] py-2.5 px-2 text-xs sm:text-sm font-semibold border-b-2 transition flex items-center justify-center gap-1.5">
+        <span class="w-5 h-5 rounded-full text-[11px] flex items-center justify-center font-bold">4</span>
+        <span>음성 제작</span>
+      </button>
+    </nav>
+  </header>
+
+  <!-- Main Workspace -->
+  <main class="flex-1 max-w-5xl w-full mx-auto px-4 py-5 pb-24">
+
+    <!-- STEP 1: Word Upload / Extraction -->
+    <section id="step1Panel" class="step-panel space-y-5">
+      <div class="bg-white rounded-2xl border border-slate-200 p-4 sm:p-6 shadow-sm space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <h2 class="text-base sm:text-lg font-bold text-slate-900">1. 단어장 이미지 또는 목록 올리기</h2>
+            <p class="text-xs sm:text-sm text-slate-500 mt-0.5">사진을 찍거나 이미지를 올리면 Gemini가 단어·품사·영영 정의·한국어 뜻을 자동으로 정리해 줍니다.</p>
+          </div>
+          <button id="loadSampleBtn" type="button"
+            class="self-start sm:self-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-50 text-indigo-700 hover:bg-indigo-100 text-xs font-semibold transition">
+            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+            샘플 단어 불러오기 (Unit 11)
+          </button>
+        </div>
+
+        <!-- Image Upload Box -->
+        <label for="imageInput"
+          class="block border-2 border-dashed border-slate-300 hover:border-indigo-400 bg-slate-50/70 hover:bg-indigo-50/30 rounded-xl p-5 text-center cursor-pointer transition">
+          <input id="imageInput" type="file" accept="image/*" multiple class="hidden" />
+          <div class="flex flex-col items-center gap-2">
+            <div class="w-11 h-11 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center">
+              <i data-lucide="camera" class="w-5 h-5"></i>
+            </div>
+            <p class="text-sm font-semibold text-slate-700">여기를 눌러 단어장 사진 선택 또는 촬영</p>
+            <p class="text-xs text-slate-400">여러 장의 사진도 한 번에 올릴 수 있어요 (JPG, PNG, WEBP)</p>
+          </div>
+        </label>
+
+        <!-- Image Previews -->
+        <div id="imagePreviewGrid" class="hidden grid grid-cols-2 sm:grid-cols-4 gap-3"></div>
+
+        <!-- Optional Raw Text Input -->
+        <div>
+          <label for="rawWordText" class="block text-xs font-semibold text-slate-600 mb-1.5">또는 단어 목록 직접 붙여넣기 (선택)</label>
+          <textarea id="rawWordText" rows="3" placeholder="예: prefer, neat, carve, visual, stiff, atmosphere..."
+            class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"></textarea>
+        </div>
+
+        <div class="flex flex-wrap items-center justify-between gap-3 pt-1">
+          <button id="extractWordsBtn" type="button"
+            class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold shadow-sm transition disabled:opacity-50">
+            <i data-lucide="wand-2" class="w-4 h-4"></i>
+            <span>AI로 단어·의미 추출하기</span>
+          </button>
+          <span id="extractStatus" class="text-xs font-medium text-slate-600"></span>
+        </div>
+        <div id="extractAlertBox" class="hidden rounded-xl px-3.5 py-2.5 text-xs font-medium"></div>
+      </div>
+
+      <!-- Extracted Words List -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-4 sm:p-6 shadow-sm space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div class="flex items-center gap-2">
+            <h3 class="text-sm sm:text-base font-bold text-slate-900">추출된 단어 리스트</h3>
+            <span id="wordCountBadge" class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 text-xs font-bold">0개</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <button id="clearAllWordsBtn" type="button"
+              class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-rose-200 bg-rose-50 hover:bg-rose-100 text-xs font-semibold text-rose-700 transition">
+              <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+              전체 삭제
+            </button>
+            <button id="addWordRowBtn" type="button"
+              class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-slate-300 hover:bg-slate-50 text-xs font-semibold text-slate-700 transition">
+              <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+              단어 추가
+            </button>
+            <button id="goStep2Btn" type="button"
+              class="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold transition">
+              다음: PDF 만들기
+              <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+        </div>
+
+        <div id="wordCardsContainer" class="space-y-2.5"></div>
+      </div>
+    </section>
+
+    <!-- STEP 2: PDF Generation -->
+    <section id="step2Panel" class="step-panel hidden space-y-5">
+      <div class="bg-white rounded-2xl border border-slate-200 p-4 sm:p-6 shadow-sm space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h2 class="text-base sm:text-lg font-bold text-slate-900">2. 정해진 양식의 단어장 PDF 만들기</h2>
+            <p class="text-xs sm:text-sm text-slate-500 mt-0.5">2단 테스트지 양식과 학습용 정리표를 선택해 PDF로 저장할 수 있어요.</p>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <button id="reshuffleTestBtn" type="button"
+              class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs sm:text-sm font-semibold transition">
+              <i data-lucide="shuffle" class="w-4 h-4"></i>
+              <span>순서 다시 섞기 (Retest)</span>
+            </button>
+            <button id="printPdfBtn" type="button"
+              class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-semibold shadow-sm transition disabled:opacity-50">
+              <i data-lucide="file-down" class="w-4 h-4"></i>
+              <span>PDF 파일 저장</span>
+            </button>
+            <button id="goStep3Btn" type="button"
+              class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-semibold transition">
+              다음: 퀴즈 대본
+              <i data-lucide="arrow-right" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label for="pdfTitleInput" class="block text-xs font-semibold text-slate-600 mb-1">문서 제목</label>
+            <input id="pdfTitleInput" type="text" value="GLP Reading - Unit 11 Vocabulary Test"
+              class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none" />
+          </div>
+          <div>
+            <label for="pdfModeSelect" class="block text-xs font-semibold text-slate-600 mb-1">출력 양식 선택</label>
+            <select id="pdfModeSelect"
+              class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-indigo-500 outline-none">
+              <option value="test_and_key">테스트지 + 정답표 (단어 순서 랜덤)</option>
+              <option value="test_only">단어 테스트지 (단어 순서 랜덤)</option>
+              <option value="retest_and_key">Retest 테스트지 + 정답표 (새 랜덤 순서)</option>
+              <option value="retest_only">Retest 단어 테스트지 (새 랜덤 순서)</option>
+              <option value="study_only">학습용 단어장 (원래 순서)</option>
+            </select>
+          </div>
+        </div>
+
+        <p class="text-[11px] text-slate-500 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2">
+          💡 <strong>PDF 파일 저장</strong> 버튼을 누르면 아래 미리보기 양식 그대로 A4 PDF 파일이 즉시 다운로드됩니다.
+        </p>
+      </div>
+
+      <!-- Live A4 Preview -->
+      <div class="overflow-x-auto pb-2">
+        <div id="printArea" class="bg-white border border-slate-200 shadow-sm rounded-xl p-6 sm:p-8 max-w-[820px] mx-auto text-slate-900">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 3: Podcast Script Generation -->
+    <section id="step3Panel" class="step-panel hidden space-y-5">
+      <div class="bg-white rounded-2xl border border-slate-200 p-4 sm:p-6 shadow-sm space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <h2 class="text-base sm:text-lg font-bold text-slate-900">3. 엄마와 이안이의 퀴즈 팟캐스트 대본</h2>
+            <p class="text-xs sm:text-sm text-slate-500 mt-0.5">등록하신 7가지 고정 규칙([Scene], [Sample Context], [Script], 평문, 스토리텔링 등)을 100% 반영합니다.</p>
+          </div>
+          <span class="self-start px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 text-[11px] font-bold border border-emerald-200">
+            7대 고정 규칙 자동 적용
+          </span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label for="storyThemeInput" class="block text-xs font-semibold text-slate-600 mb-1">모험 스토리 테마 (비워두면 AI가 자동 추천)</label>
+            <input id="storyThemeInput" type="text" placeholder="예: 바닷속 보물섬 탐험, 우주 정거장 대작전"
+              class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none" />
+          </div>
+          <div class="flex items-end gap-2">
+            <button id="generateScriptBtn" type="button"
+              class="w-full inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold shadow-sm transition disabled:opacity-50">
+              <i data-lucide="sparkles" class="w-4 h-4"></i>
+              <span>팟캐스트 대본 생성하기</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Rule Verification Bar -->
+        <div id="scriptValidationBar" class="hidden flex flex-wrap gap-2 pt-1"></div>
+
+        <!-- Script Editor -->
+        <div>
+          <div class="flex items-center justify-between mb-1.5">
+            <label for="scriptTextarea" class="text-xs font-semibold text-slate-600">생성된 대본 (직접 수정 가능)</label>
+            <div class="flex items-center gap-2">
+              <button id="copyScriptBtn" type="button"
+                class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-300 hover:bg-slate-50 text-xs font-semibold text-slate-700 transition">
+                <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                대본 복사
+              </button>
+              <button id="goStep4Btn" type="button"
+                class="inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold transition">
+                다음: 음성 제작
+                <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+          </div>
+          <textarea id="scriptTextarea" rows="16"
+            class="w-full rounded-xl border border-slate-300 bg-slate-900 text-slate-100 font-mono text-xs sm:text-sm p-4 leading-relaxed focus:ring-2 focus:ring-indigo-500 outline-none"
+            placeholder="여기에 [Scene], [Sample Context], [Script] 형식의 대본이 생성됩니다."></textarea>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 4: Audio Generation & Download -->
+    <section id="step4Panel" class="step-panel hidden space-y-5">
+      <div class="bg-white rounded-2xl border border-slate-200 p-4 sm:p-6 shadow-sm space-y-5">
+        <div>
+          <h2 class="text-base sm:text-lg font-bold text-slate-900">4. Google AI Studio TTS 음성 제작</h2>
+          <p class="text-xs sm:text-sm text-slate-500 mt-0.5">대본의 Speaker 1(엄마)과 Speaker 2(이안이)를 다중 화자 음성으로 합성합니다.</p>
+        </div>
+
+        <!-- Voice Selection -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
+          <div>
+            <label for="speaker1Voice" class="block text-xs font-semibold text-slate-700 mb-1">Speaker 1 (엄마 튜터) 목소리</label>
+            <select id="speaker1Voice" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white outline-none">
+              <option value="Kore" selected>Kore (차분하고 명확한 여성)</option>
+              <option value="Sulafat">Sulafat (따뜻한 여성)</option>
+              <option value="Aoede">Aoede (산뜻하고 부드러운 여성)</option>
+              <option value="Vindemiatrix">Vindemiatrix (온화한 여성)</option>
+            </select>
+          </div>
+          <div>
+            <label for="speaker2Voice" class="block text-xs font-semibold text-slate-700 mb-1">Speaker 2 (8살 이안이) 목소리</label>
+            <select id="speaker2Voice" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white outline-none">
+              <option value="Puck" selected>Puck (경쾌하고 밝은 소년)</option>
+              <option value="Leda">Leda (어리고 맑은 톤)</option>
+              <option value="Zephyr">Zephyr (밝고 활기찬 톤)</option>
+              <option value="Fenrir">Fenrir (에너지 넘치는 톤)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+          <button id="generateAudioBtn" type="button"
+            class="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold shadow-sm transition disabled:opacity-50">
+            <i data-lucide="volume-2" class="w-4 h-4"></i>
+            <span>팟캐스트 오디오 생성하기</span>
+          </button>
+          <span id="audioStatusText" class="text-xs text-slate-500"></span>
+        </div>
+
+        <!-- Audio Player & Download -->
+        <div id="audioResultBox" class="hidden bg-indigo-50/70 border border-indigo-200 rounded-xl p-4 space-y-4">
+          <div class="flex items-center justify-between">
+            <span class="text-sm font-bold text-indigo-950">생성된 팟캐스트 오디오</span>
+            <span id="audioDurationInfo" class="text-xs font-medium text-indigo-700"></span>
+          </div>
+          <audio id="audioPlayer" controls class="w-full"></audio>
+
+          <div class="flex flex-wrap gap-2">
+            <button id="downloadWavBtn" type="button"
+              class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-semibold transition">
+              <i data-lucide="download" class="w-4 h-4"></i>
+              WAV 다운로드 (원본 고음질)
+            </button>
+            <button id="downloadMp3Btn" type="button"
+              class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-semibold transition">
+              <i data-lucide="file-audio" class="w-4 h-4"></i>
+              MP3 변환 다운로드 (모바일 추천)
+            </button>
+          </div>
+
+          <div class="bg-white/90 border border-indigo-100 rounded-lg p-3 text-xs text-slate-600 space-y-1.5">
+            <p class="font-semibold text-slate-800">WMA 파일이 꼭 필요한 경우 안내</p>
+            <p>웹 브라우저는 라이선스 구조상 Microsoft WMA 인코딩을 직접 지원하지 않으며, Gemini TTS도 WAV 형식으로 음성을 출력합니다. 휴대폰 재생은 위 <strong>MP3</strong>나 <strong>WAV</strong>를 바로 쓰시면 되고, 차량/전용 기기용 <code>.wma</code>가 필요하시면 PC에서 WAV를 받은 뒤 아래 명령어로 변환할 수 있습니다.</p>
+            <div class="flex items-center gap-2 bg-slate-900 text-slate-100 rounded-lg px-3 py-2 font-mono text-[11px] overflow-x-auto">
+              <code id="ffmpegCmd" class="flex-1 whitespace-nowrap">ffmpeg -i ian_vocab_podcast.wav -c:a wmav2 ian_vocab_podcast.wma</code>
+              <button id="copyFfmpegBtn" type="button" class="px-2 py-0.5 bg-slate-700 hover:bg-slate-600 rounded text-[10px] font-sans">복사</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Settings Modal -->
+  <div id="settingsModal" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl p-5 sm:p-6 shadow-xl space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="text-base font-bold text-slate-900">Google AI Studio API 정보</h3>
+        <button id="closeSettingsBtn" type="button" class="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Fixed/Locked View when API Key is already saved -->
+      <div id="settingsLockedView" class="hidden space-y-3">
+        <div class="rounded-xl bg-emerald-50 border border-emerald-200 p-3.5 space-y-2 text-xs">
+          <div class="flex items-center justify-between">
+            <span class="font-semibold text-emerald-900">연결 상태</span>
+            <span class="px-2 py-0.5 rounded-full bg-emerald-600 text-white font-bold text-[10px]">고정됨 · 연결 완료</span>
+          </div>
+          <div class="flex items-center justify-between text-emerald-800">
+            <span>API 키</span>
+            <span id="maskedApiKeyText" class="font-mono font-semibold">AIza••••</span>
+          </div>
+          <div class="flex items-center justify-between text-emerald-800">
+            <span>단어 · 대본 모델</span>
+            <span id="fixedTextModelText" class="font-mono">gemini-3.8-flash</span>
+          </div>
+          <div class="flex items-center justify-between text-emerald-800">
+            <span>TTS 음성 모델</span>
+            <span id="fixedTtsModelText" class="font-mono">gemini-3.8-flash-tts</span>
+          </div>
+        </div>
+        <div class="flex items-center justify-between pt-1">
+          <button id="clearApiKeyBtn" type="button"
+            class="text-[11px] text-slate-400 hover:text-rose-600 underline transition">
+            다른 키로 초기화
+          </button>
+          <button id="closeSettingsDoneBtn" type="button"
+            class="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold transition">
+            확인
+          </button>
+        </div>
+      </div>
+
+      <!-- Initial Input View when no API Key is saved yet -->
+      <div id="settingsInputView" class="space-y-3">
+        <div>
+          <label for="apiKeyInput" class="block text-xs font-semibold text-slate-700 mb-1">Gemini API Key</label>
+          <input id="apiKeyInput" type="password" placeholder="AIzaSy..."
+            class="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none" />
+          <p class="text-[11px] text-slate-500 mt-1">한 번 저장하면 이 기기 브라우저에 고정되어 다시 입력하지 않아도 됩니다.</p>
+        </div>
+
+        <input id="textModelInput" type="hidden" value="gemini-3.8-flash" />
+        <input id="ttsModelInput" type="hidden" value="gemini-3.8-flash-tts" />
+
+        <button id="saveSettingsBtn" type="button"
+          class="w-full px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold transition">
+          고정 저장하기
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toastEl" class="hidden fixed bottom-5 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-full bg-slate-900 text-white text-xs sm:text-sm font-medium shadow-lg transition"></div>
+
+  <script>
+    // ---------- State ----------
+    const state = {
+      currentStep: 1,
+      apiKey: '',
+      textModel: 'gemini-3.8-flash',
+      ttsModel: 'gemini-3.8-flash-tts',
+      images: [], // { name, mimeType, base64 }
+      words: [],  // { id, word, pos, en_def, ko_meaning, example }
+      shuffledWords: [],
+      isRetest: false,
+      script: '',
+      wavBytes: null, // Uint8Array
+      wavUrl: null
+    };
+
+    const SAMPLE_WORDS = [
+      { id: 1, word: 'temperature', pos: 'n.', en_def: 'the level of heat', ko_meaning: '온도, 기온', example: 'Check the temperature before going outside.' },
+      { id: 2, word: 'grip', pos: 'n.', en_def: 'the way that something is held', ko_meaning: '잡는 방식, 꽉 쥠', example: 'Keep a firm grip on the handle.' },
+      { id: 3, word: 'prefer', pos: 'v.', en_def: 'to like one thing more than another', ko_meaning: '더 좋아하다, 선호하다', example: 'I prefer apples to bananas.' },
+      { id: 4, word: 'neat', pos: 'adj.', en_def: 'clean and orderly', ko_meaning: '깔끔한, 정돈된', example: 'Your desk looks very neat today.' },
+      { id: 5, word: 'carve', pos: 'v.', en_def: 'to cut a shape or pattern into a surface', ko_meaning: '새기다, 조각하다', example: 'We can carve a pumpkin for Halloween.' },
+      { id: 6, word: 'forearm', pos: 'n.', en_def: 'the part of the arm between the elbow and the wrist', ko_meaning: '팔뚝, 아래팔', example: 'He wore a cool band on his forearm.' },
+      { id: 7, word: 'type', pos: 'v.', en_def: 'to write with a computer keyboard or typewriter', ko_meaning: '타자를 치다, 입력하다', example: 'Ian can type his name quickly.' },
+      { id: 8, word: 'attractive', pos: 'adj.', en_def: 'having a pleasing appearance', ko_meaning: '매력적인, 보기 좋은', example: 'The colorful poster is very attractive.' },
+      { id: 9, word: 'visual', pos: 'adj.', en_def: 'relating to sight', ko_meaning: '시각적인, 눈에 보이는', example: 'Pictures are great visual aids.' },
+      { id: 10, word: 'stiff', pos: 'adj.', en_def: 'difficult to bend or move', ko_meaning: '뻣뻣한, 굳은', example: 'My neck feels a little stiff.' },
+      { id: 11, word: 'persistent', pos: 'adj.', en_def: 'without stopping; without giving up', ko_meaning: '끈기 있는, 포기하지 않는', example: 'She was persistent and solved the puzzle.' },
+      { id: 12, word: 'shell', pos: 'n.', en_def: 'the hard outer part of an animal', ko_meaning: '껍데기, 조개껍질', example: 'A turtle hides inside its hard shell.' },
+      { id: 13, word: 'illusion', pos: 'n.', en_def: 'a thing that confuses the senses', ko_meaning: '착각, 환상', example: 'The magic trick was a clever illusion.' },
+      { id: 14, word: 'creativity', pos: 'n.', en_def: 'the ability to think of new and imaginative ideas', ko_meaning: '창의력, 독창성', example: 'Building with blocks boosts creativity.' },
+      { id: 15, word: 'disappear', pos: 'v.', en_def: 'to not be visible anymore', ko_meaning: '사라지다', example: 'The stars disappear when the sun rises.' },
+      { id: 16, word: 'notice', pos: 'v.', en_def: 'to see or become aware of', ko_meaning: '알아차리다, 주목하다', example: 'Did you notice the rainbow?' },
+      { id: 17, word: 'support', pos: 'v.', en_def: 'to hold something up and keep it in place', ko_meaning: '받치다, 지지하다', example: 'Strong pillars support the bridge.' },
+      { id: 18, word: 'sparkle', pos: 'v.', en_def: 'to shine with small flashes of light', ko_meaning: '반짝반짝 빛나다', example: 'The snow began to sparkle in the sun.' },
+      { id: 19, word: 'curve', pos: 'n.', en_def: 'a smooth, rounded line', ko_meaning: '곡선', example: 'The road makes a gentle curve to the left.' },
+      { id: 20, word: 'view', pos: 'v.', en_def: 'to see or look at', ko_meaning: '보다, 관람하다', example: 'We climbed the hill to view the city.' },
+      { id: 21, word: 'project', pos: 'v.', en_def: 'to cause an image to appear on a surface', ko_meaning: '비추다, 투사하다', example: 'The machine can project movies onto the wall.' },
+      { id: 22, word: 'posture', pos: 'n.', en_def: 'the position of the body when sitting or standing', ko_meaning: '자세', example: 'Good posture keeps your back healthy.' },
+      { id: 23, word: 'rush', pos: 'v.', en_def: 'to do something very quickly and in a hurry', ko_meaning: '서두르다, 급히 가다', example: 'Do not rush when you write your spelling.' },
+      { id: 24, word: 'beneath', pos: 'prep.', en_def: 'under', ko_meaning: '아래에, 밑에', example: 'The treasure chest was buried beneath the sand.' },
+      { id: 25, word: 'message', pos: 'n.', en_def: 'a piece of information sent or given to someone', ko_meaning: '메시지, 전언', example: 'I sent a secret message to my friend.' },
+      { id: 26, word: 'surface', pos: 'n.', en_def: 'the top layer of something', ko_meaning: '표면, 겉면', example: 'Leaves floated on the surface of the pond.' },
+      { id: 27, word: 'arch', pos: 'n./v.', en_def: 'a curve; to shape something into a curve', ko_meaning: '아치(활 모양); 활처럼 구부리다', example: 'Cats arch their backs when surprised.' },
+      { id: 28, word: 'atmosphere', pos: 'n.', en_def: 'the gases surrounding Earth', ko_meaning: '대기, 공기층', example: 'Earth has an atmosphere that helps us breathe.' },
+      { id: 29, word: 'spectacular', pos: 'adj.', en_def: 'beautiful in a dramatic way', ko_meaning: '장관인, 멋진', example: 'The fireworks show was spectacular.' },
+      { id: 30, word: 'occur', pos: 'v.', en_def: 'to happen', ko_meaning: '일어나다, 발생하다', example: 'Rainbows occur when sunlight hits raindrops.' }
+    ];
+
+    // ---------- Helpers ----------
+    function showToast(msg) {
+      const el = document.getElementById('toastEl');
+      el.textContent = msg;
+      el.classList.remove('hidden');
+      clearTimeout(el._timer);
+      el._timer = setTimeout(() => el.classList.add('hidden'), 3200);
+    }
+
+    function escapeHtml(str) {
+      return String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function loadSettings() {
+      try {
+        state.apiKey = localStorage.getItem('ian_tts_api_key') || '';
+        state.textModel = localStorage.getItem('ian_tts_text_model') || 'gemini-3.8-flash';
+        if (state.textModel.includes('2.5')) state.textModel = 'gemini-3.8-flash';
+        state.ttsModel = localStorage.getItem('ian_tts_tts_model') || 'gemini-3.8-flash-tts';
+      } catch (e) {}
+      document.getElementById('apiKeyInput').value = state.apiKey;
+      document.getElementById('textModelInput').value = state.textModel;
+      document.getElementById('ttsModelInput').value = state.ttsModel;
+      updateApiBadge();
+    }
+
+    function renderSettingsModalState() {
+      const locked = document.getElementById('settingsLockedView');
+      const inputView = document.getElementById('settingsInputView');
+      if (state.apiKey.trim()) {
+        locked.classList.remove('hidden');
+        inputView.classList.add('hidden');
+        const k = state.apiKey.trim();
+        const masked = k.length > 8 ? `${k.slice(0, 4)}••••••••${k.slice(-4)}` : '••••••••';
+        document.getElementById('maskedApiKeyText').textContent = masked;
+        document.getElementById('fixedTextModelText').textContent = state.textModel;
+        document.getElementById('fixedTtsModelText').textContent = state.ttsModel;
+      } else {
+        locked.classList.add('hidden');
+        inputView.classList.remove('hidden');
+      }
+    }
+
+    function updateApiBadge() {
+      const btn = document.getElementById('openSettingsBtn');
+      const dot = document.getElementById('apiStatusDot');
+      const txt = document.getElementById('apiStatusText');
+      if (state.apiKey.trim()) {
+        btn.className = 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border border-emerald-200 bg-emerald-50 text-emerald-700 transition shrink-0';
+        dot.className = 'w-2 h-2 rounded-full bg-emerald-500';
+        txt.textContent = 'API 연결됨';
+      } else {
+        btn.className = 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border border-amber-200 bg-amber-50 text-amber-800 transition shrink-0';
+        dot.className = 'w-2 h-2 rounded-full bg-amber-500';
+        txt.textContent = 'API 키 입력';
+      }
+    }
+
+    function switchStep(stepNum) {
+      state.currentStep = stepNum;
+      document.querySelectorAll('.step-panel').forEach((el, idx) => {
+        el.classList.toggle('hidden', idx + 1 !== stepNum);
+      });
+      document.querySelectorAll('.step-tab').forEach((tab) => {
+        const s = Number(tab.dataset.step);
+        const badge = tab.querySelector('span:first-child');
+        if (s === stepNum) {
+          tab.classList.add('border-indigo-600', 'text-indigo-700');
+          tab.classList.remove('border-transparent', 'text-slate-500');
+          badge.classList.add('bg-indigo-600', 'text-white');
+          badge.classList.remove('bg-slate-200', 'text-slate-600');
+        } else {
+          tab.classList.remove('border-indigo-600', 'text-indigo-700');
+          tab.classList.add('border-transparent', 'text-slate-500');
+          badge.classList.remove('bg-indigo-600', 'text-white');
+          badge.classList.add('bg-slate-200', 'text-slate-600');
+        }
+      });
+      if (stepNum === 2) renderPdfPreview();
+    }
+
+    // ---------- Step 1: Words & Images ----------
+    function renderWordCards() {
+      const container = document.getElementById('wordCardsContainer');
+      document.getElementById('wordCountBadge').textContent = `${state.words.length}개`;
+
+      if (state.words.length === 0) {
+        container.innerHTML = `<div class="text-center py-8 text-sm text-slate-400">아직 단어가 없습니다. 이미지를 올리거나 <strong>샘플 단어 불러오기</strong>를 눌러보세요.</div>`;
+        return;
+      }
+
+      container.innerHTML = state.words.map((w, idx) => `
+        <div class="border border-slate-200 rounded-xl p-3.5 bg-slate-50/60 space-y-2.5" data-word-idx="${idx}">
+          <div class="flex items-center justify-between gap-2">
+            <span class="text-xs font-bold text-indigo-600">#${idx + 1}</span>
+            <button type="button" onclick="removeWord(${idx})" class="text-xs text-rose-500 hover:text-rose-700 font-semibold">삭제</button>
+          </div>
+          <div class="grid grid-cols-3 gap-2">
+            <div class="col-span-2">
+              <label class="block text-[11px] font-semibold text-slate-500 mb-1">영단어</label>
+              <input type="text" value="${escapeHtml(w.word)}" onchange="updateWord(${idx}, 'word', this.value)"
+                placeholder="예: respect" class="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm font-bold text-slate-900" />
+            </div>
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-500 mb-1">품사</label>
+              <input type="text" value="${escapeHtml(w.pos)}" onchange="updateWord(${idx}, 'pos', this.value)"
+                placeholder="n. / v." class="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm" />
+            </div>
+          </div>
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-500 mb-1">영영 정의 (English)</label>
+            <textarea rows="2" onchange="updateWord(${idx}, 'en_def', this.value)"
+              placeholder="이미지에 있는 모든 영영 정의를 줄바꿈으로 구분해 입력"
+              class="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs sm:text-sm text-slate-800 leading-snug">${escapeHtml(w.en_def)}</textarea>
+          </div>
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-500 mb-1">한국어 뜻 (Korean)</label>
+            <textarea rows="2" onchange="updateWord(${idx}, 'ko_meaning', this.value)"
+              placeholder="이미지에 있는 모든 한국어 뜻을 줄바꿈으로 구분해 입력"
+              class="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs sm:text-sm text-slate-800 leading-snug">${escapeHtml(w.ko_meaning)}</textarea>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    window.updateWord = function (idx, field, val) {
+      if (state.words[idx]) state.words[idx][field] = val;
+    };
+
+    window.removeWord = function (idx) {
+      state.words.splice(idx, 1);
+      renderWordCards();
+    };
+
+    function renderImagePreviews() {
+      const grid = document.getElementById('imagePreviewGrid');
+      if (state.images.length === 0) {
+        grid.classList.add('hidden');
+        grid.innerHTML = '';
+        return;
+      }
+      grid.classList.remove('hidden');
+      grid.innerHTML = state.images.map((img, i) => `
+        <div class="relative rounded-xl overflow-hidden border border-slate-200 bg-slate-100 aspect-[4/3]">
+          <img src="data:${img.mimeType};base64,${img.base64}" alt="${escapeHtml(img.name)}" class="w-full h-full object-cover" />
+          <button type="button" onclick="removeImage(${i})"
+            class="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-slate-900/75 text-white text-xs flex items-center justify-center hover:bg-rose-600">✕</button>
+        </div>
+      `).join('');
+    }
+
+    window.removeImage = function (idx) {
+      state.images.splice(idx, 1);
+      renderImagePreviews();
+    };
+
+    async function compressImageToJpeg(file, maxDim = 1600) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onerror = () => reject(new Error('이미지 파일을 읽을 수 없습니다.'));
+        reader.onload = () => {
+          const img = new Image();
+          img.onerror = () => {
+            const raw = String(reader.result).split(',')[1] || '';
+            resolve({ mimeType: file.type || 'image/jpeg', base64: raw });
+          };
+          img.onload = () => {
+            let { width, height } = img;
+            if (width > maxDim || height > maxDim) {
+              const ratio = Math.min(maxDim / width, maxDim / height);
+              width = Math.round(width * ratio);
+              height = Math.round(height * ratio);
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+            resolve({ mimeType: 'image/jpeg', base64: dataUrl.split(',')[1] });
+          };
+          img.src = reader.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function handleImageFiles(files) {
+      for (const file of files) {
+        const isImg = (file.type && file.type.startsWith('image/')) || /\.(jpe?g|png|webp|gif|bmp|heic|heif)$/i.test(file.name || '');
+        if (!isImg) continue;
+        try {
+          const compressed = await compressImageToJpeg(file);
+          state.images.push({ name: file.name, mimeType: compressed.mimeType, base64: compressed.base64 });
+        } catch (err) {
+          showToast(err.message);
+        }
+      }
+      renderImagePreviews();
+      const input = document.getElementById('imageInput');
+      if (input) input.value = '';
+    }
+
+    function setExtractAlert(type, message) {
+      const box = document.getElementById('extractAlertBox');
+      if (!message) {
+        box.classList.add('hidden');
+        box.textContent = '';
+        return;
+      }
+      box.classList.remove('hidden');
+      if (type === 'error') {
+        box.className = 'rounded-xl px-3.5 py-2.5 text-xs font-medium bg-rose-50 text-rose-700 border border-rose-200';
+      } else {
+        box.className = 'rounded-xl px-3.5 py-2.5 text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200';
+      }
+      box.textContent = message;
+    }
+
+    function parseJsonArraySafely(rawText) {
+      let cleaned = String(rawText || '').trim();
+      cleaned = cleaned.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
+      try {
+        const parsed = JSON.parse(cleaned);
+        if (Array.isArray(parsed)) return parsed;
+        if (parsed && Array.isArray(parsed.words)) return parsed.words;
+        if (parsed && Array.isArray(parsed.items)) return parsed.items;
+      } catch (e) {
+        const start = cleaned.indexOf('[');
+        const end = cleaned.lastIndexOf(']');
+        if (start !== -1 && end > start) {
+          const slice = cleaned.slice(start, end + 1);
+          const parsedSlice = JSON.parse(slice);
+          if (Array.isArray(parsedSlice)) return parsedSlice;
+        }
+        throw e;
+      }
+      throw new Error('추출된 결과가 배열 형식이 아닙니다.');
+    }
+
+    async function callGeminiExtract(modelName, parts) {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(modelName)}:generateContent?key=${encodeURIComponent(state.apiKey.trim())}`;
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 25000);
+      let res;
+      try {
+        res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          signal: controller.signal,
+          body: JSON.stringify({
+            contents: [{ role: 'user', parts }],
+            generationConfig: { responseMimeType: 'application/json' }
+          })
+        });
+      } catch (e) {
+        if (e.name === 'AbortError') {
+          const err = new Error('요청 시간 초과 (25초)');
+          err.status = 503;
+          throw err;
+        }
+        throw e;
+      } finally {
+        clearTimeout(timer);
+      }
+      const data = await res.json();
+      if (!res.ok) {
+        const err = new Error(data.error?.message || `HTTP ${res.status}`);
+        err.status = res.status;
+        throw err;
+      }
+      return data;
+    }
+
+    async function extractWordsWithGemini() {
+      setExtractAlert('', '');
+      if (!state.apiKey.trim()) {
+        setExtractAlert('error', '먼저 오른쪽 상단의 [API 키 입력] 버튼을 눌러 Google AI Studio API 키를 저장해 주세요.');
+        document.getElementById('settingsModal').classList.remove('hidden');
+        return;
+      }
+      const rawText = document.getElementById('rawWordText').value.trim();
+      if (state.images.length === 0 && !rawText) {
+        setExtractAlert('error', '단어장 이미지 또는 단어 목록 텍스트를 먼저 입력해 주세요.');
+        return;
+      }
+
+      const btn = document.getElementById('extractWordsBtn');
+      const status = document.getElementById('extractStatus');
+      const origBtnHtml = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = '<span class="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span><span>단어 분석 중...</span>';
+      status.textContent = 'Gemini가 이미지를 읽고 있어요...';
+
+      try {
+        const parts = [
+          {
+            text: `You are a strict, verbatim English vocabulary extractor.
+Read EVERY line of the attached vocabulary image(s) and/or text carefully.
+CRITICAL RULES:
+1. NEVER omit or drop any meaning. If a word has 2 or more meanings or parts of speech in the image (e.g., "respect" having both "a good opinion of the worth or value..." AND another meaning, or both noun and verb meanings), extract EVERY SINGLE ONE of them.
+2. Separate multiple meanings inside "en_def" and "ko_meaning" with a newline ("\n") so each meaning sits cleanly on its own line (e.g., "n. a good opinion of the worth or value...\nv. to feel or show admiration for...").
+3. STRICT LANGUAGE SEPARATION:
+   - "en_def" MUST contain ONLY English definitions (never mix Korean into "en_def"). Copy every English definition printed in the image word-for-word without shortening.
+   - "ko_meaning" MUST contain ONLY Korean meanings (never mix English definitions into "ko_meaning"). Copy every Korean meaning printed in the image without shortening; if the image has only English definitions, translate ALL of those English definitions accurately into Korean line by line.
+4. Return ONLY a valid JSON array where each object has:
+- "word": Exact English word (string)
+- "pos": All parts of speech shown, e.g. "n.", "v.", or "n. / v." (string)
+- "en_def": ALL English definitions from the image, separated by "\n" (string, English only)
+- "ko_meaning": ALL Korean meanings corresponding to every definition, separated by "\n" (string, Korean only)
+- "example": Example sentence from the image if present, or one short sentence (string)
+
+${rawText ? 'Text input:\n' + rawText : ''}`
+          }
+        ];
+
+        for (const img of state.images) {
+          parts.push({ inlineData: { mimeType: img.mimeType, data: img.base64 } });
+        }
+
+        const candidateModels = [state.textModel, 'gemini-3.6-flash', 'gemini-3.5-flash-lite', 'gemini-3.1-flash-lite'];
+        const uniqueModels = [...new Set(candidateModels.filter(Boolean))];
+        let data = null;
+        let lastErr = null;
+
+        for (const modelName of uniqueModels) {
+          try {
+            data = await callGeminiExtract(modelName, parts);
+            break;
+          } catch (err) {
+            lastErr = err;
+            const isRetryable = err.status === 404 || err.status === 429 || err.status === 503 ||
+              /not found|not supported|high demand|overloaded|unavailable|try again|exhausted/i.test(err.message);
+            if (!isRetryable) {
+              throw err;
+            }
+            status.textContent = `${modelName} 혼잡 — 다른 모델로 자동 재시도 중...`;
+          }
+        }
+        if (!data) throw lastErr || new Error('모델 호출에 실패했습니다.');
+
+        const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '[]';
+        const parsed = parseJsonArraySafely(text);
+
+        state.words = parsed.map((item, idx) => ({
+          id: idx + 1,
+          word: item.word || '',
+          pos: item.pos || '',
+          en_def: item.en_def || '',
+          ko_meaning: item.ko_meaning || '',
+          example: item.example || ''
+        }));
+        renderWordCards();
+        status.textContent = `${state.words.length}개 단어 추출 완료!`;
+        setExtractAlert('success', `새로운 단어 ${state.words.length}개를 성공적으로 추출해 아래 리스트를 업데이트했습니다.`);
+        showToast(`${state.words.length}개의 단어를 추출했습니다.`);
+        document.getElementById('wordCardsContainer').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      } catch (err) {
+        status.textContent = '추출 실패';
+        setExtractAlert('error', `단어 추출 실패: ${err.message}`);
+        showToast('단어 추출 중 오류가 발생했습니다.');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = origBtnHtml;
+        if (window.lucide) lucide.createIcons();
+      }
+    }
+
+    // ---------- Step 2: PDF Preview ----------
+    function shuffleWordsArray(list) {
+      const arr = list.map((w) => ({ ...w }));
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    function ensureShuffledWords(forceReshuffle = false) {
+      if (forceReshuffle || state.shuffledWords.length !== state.words.length) {
+        state.shuffledWords = shuffleWordsArray(state.words);
+      }
+    }
+
+    function renderPdfPreview() {
+      const container = document.getElementById('printArea');
+      const baseTitle = document.getElementById('pdfTitleInput').value.trim() || 'Vocabulary Test';
+      const mode = document.getElementById('pdfModeSelect').value;
+      const total = state.words.length;
+
+      if (total === 0) {
+        container.innerHTML = `<p class="text-center text-slate-400 py-10 text-sm">1단계에서 단어를 먼저 추가해 주세요.</p>`;
+        return;
+      }
+
+      const isStudyOnly = mode === 'study_only';
+      const isRetestMode = mode === 'retest_and_key' || mode === 'retest_only' || state.isRetest;
+      if (!isStudyOnly) ensureShuffledWords(false);
+
+      const activeWords = isStudyOnly ? state.words : state.shuffledWords;
+      const displayTitle = isRetestMode && !/retest/i.test(baseTitle) ? `${baseTitle} (Retest)` : baseTitle;
+
+      const half = Math.ceil(total / 2);
+      const leftWords = activeWords.slice(0, half);
+      const rightWords = activeWords.slice(half);
+
+      const testBlock = `
+        <div>
+          <div class="flex items-start justify-between border-b-2 border-slate-800 pb-3 mb-5 gap-4">
+            <h2 class="text-xl font-bold text-slate-900 leading-tight">${escapeHtml(displayTitle)}</h2>
+            <div class="text-xs text-slate-700 shrink-0 space-y-1.5 text-right">
+              <div>Name: ______________________</div>
+              <div>Score: ____________ / ${total}</div>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 text-xs">
+            <div class="space-y-3">
+              ${leftWords.map((w, i) => `
+                <div>
+                  <p class="font-medium text-slate-900 whitespace-pre-line"><span class="font-bold">${i + 1}.</span> ${escapeHtml(w.pos)} ${escapeHtml(w.en_def)}</p>
+                  <div class="dashed-answer-line"></div>
+                </div>
+              `).join('')}
+            </div>
+            <div class="space-y-3">
+              ${rightWords.map((w, i) => `
+                <div>
+                  <p class="font-medium text-slate-900 whitespace-pre-line"><span class="font-bold">${half + i + 1}.</span> ${escapeHtml(w.pos)} ${escapeHtml(w.en_def)}</p>
+                  <div class="dashed-answer-line"></div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+      `;
+
+      const studyBlock = `
+        <div class="${mode === 'test_and_key' ? 'page-break pt-6' : ''}">
+          <div class="flex items-center justify-between border-b-2 border-indigo-700 pb-2.5 mb-4">
+            <h2 class="text-lg font-bold text-indigo-950">${escapeHtml(displayTitle)} - 단어장 &amp; 정답표</h2>
+            <span class="text-xs font-semibold text-slate-500">총 ${total}단어</span>
+          </div>
+          <table class="w-full text-xs border-collapse">
+            <thead>
+              <tr class="bg-slate-100 border-y border-slate-300 text-left">
+                <th class="py-2 px-2 w-8">#</th>
+                <th class="py-2 px-2 w-28">Word</th>
+                <th class="py-2 px-2 w-12">품사</th>
+                <th class="py-2 px-2">English Definition</th>
+                <th class="py-2 px-2 w-36">한국어 뜻</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${activeWords.map((w, i) => `
+                <tr class="border-b border-slate-200">
+                  <td class="py-1.5 px-2 text-slate-500 font-semibold">${i + 1}</td>
+                  <td class="py-1.5 px-2 font-bold text-slate-900">${escapeHtml(w.word)}</td>
+                  <td class="py-1.5 px-2 text-slate-600">${escapeHtml(w.pos)}</td>
+                  <td class="py-1.5 px-2 text-slate-700 whitespace-pre-line">${escapeHtml(w.en_def)}</td>
+                  <td class="py-1.5 px-2 text-slate-900 font-medium whitespace-pre-line">${escapeHtml(w.ko_meaning)}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+
+      if (mode === 'test_only' || mode === 'retest_only') container.innerHTML = testBlock;
+      else if (mode === 'study_only') container.innerHTML = studyBlock;
+      else container.innerHTML = testBlock + studyBlock;
+    }
+
+    // ---------- Step 3: Script Generation (7 Fixed Rules) ----------
+    async function generatePodcastScript() {
+      if (!state.apiKey.trim()) {
+        showToast('먼저 상단에서 Google AI Studio API 키를 입력해 주세요.');
+        document.getElementById('settingsModal').classList.remove('hidden');
+        return;
+      }
+      if (state.words.length === 0) {
+        showToast('1단계에서 단어를 먼저 추가해 주세요.');
+        return;
+      }
+
+      const btn = document.getElementById('generateScriptBtn');
+      btn.disabled = true;
+      const originalHtml = btn.innerHTML;
+      btn.innerHTML = '<span>대본 작성 중...</span>';
+
+      const theme = document.getElementById('storyThemeInput').value.trim();
+      const wordListStr = state.words
+        .map((w) => `${w.word} (${w.pos}) - Korean: ${w.ko_meaning} / English definition: ${w.en_def}`)
+        .join('\n');
+
+      const prompt = `다음 영어 단어 목록을 바탕으로 'Google AI Studio Multi-speaker TTS 전용 팟캐스트 대본'을 작성해 줘.
+${theme ? `스토리 테마: ${theme}` : '스토리 테마: 주어진 단어들이 자연스럽게 어울리는 흥미진진한 모험 테마를 직접 정해줘.'}
+
+[반드시 지켜야 할 팟캐스트 대본 생성 고정 규칙 7가지]
+1. 출력 구조: 반드시 [Scene], [Sample Context], [Script] 세 영역으로만 출력해 줘. (바깥을 마크다운 코드블록으로 감싸지 말고 바로 [Scene]으로 시작해.)
+2. 음성 및 음량 고정 ([Scene] 설정):
+  - Speaker 1은 30대 영어 튜터 엄마(따뜻하고 명확하며 격려하는 톤), Speaker 2는 8살 남자아이 이안이(밝고 에너지 넘치며 맑은 소년 목소리)로 설정해.
+  - 대화 도중 목소리 톤이나 음량이 작아지지 않고 처음부터 끝까지 크고 일정하게(Consistent high volume level) 유지되도록 영문 지시문을 넣어줘.
+  - 속도는 8살 아이가 따라 읽기 편한 보통 빠르기(Moderate and relaxed pace)로 지정해.
+3. 발음 설정: 한국어 대화는 자연스러운 엄마와 아들의 구어체로, 모든 영단어·영영 정의·알파벳 스펠링은 정확한 미국 표준 원어민 발음(Crisp native US English standard accent)으로 읽도록 [Scene]에 명시해.
+4. 화자 태그 엄수: [Script] 본문에서는 대괄호([Mom], [Ian])를 절대 쓰지 말고, 오직 'Speaker 1: '과 'Speaker 2: '(콜론 뒤 한 칸 띄어쓰기)만 사용해.
+5. 스토리텔링 및 번호 제거: '1번', '첫 번째' 같은 순서 번호를 완전히 지우고, 주어진 단어 전체를 하나의 흥미진진한 테마 모험 스토리로 자연스럽게 연결해. (다의어인 경우 모든 뜻을 각각 질문에 포함)
+6. 티키타카 학습 진행 순서:
+  - 엄마(Speaker 1): 정답을 먼저 말하지 않고 스토리 속 상황 + 한국어 뜻 + 영영 정의를 들려주며 질문
+  - 아이(Speaker 2): 정답 단어와 뜻을 대답하고, 해당 단어의 알파벳 전체를 하나씩 끊어 읽음 (예: T-R-E-A-T, treat!)
+  - 엄마(Speaker 1): 정답 확인 후 시험에 자주 틀리는 핵심 스펠링 포인트(묵음, double 철자, 모음 배열 등)만 콕 짚어 설명
+7. TTS 오독 방지 (완전한 Plain Text): [Script] 본문에는 마크다운(**, #), 괄호 (), 슬래시 /, 특수기호, 아라비아 숫자(10개 -> 열 개)를 절대 넣지 말고 순수 평문으로만 작성해. 마지막은 하이파이브와 백 점 응원 인사로 마무리해 줘.
+
+[단어 목록]
+${wordListStr}`;
+
+      try {
+        const candidateModels = [...new Set([state.textModel, 'gemini-3.6-flash', 'gemini-3.5-flash-lite', 'gemini-3.1-flash-lite'].filter(Boolean))];
+        let data = null;
+        let lastErr = null;
+        for (const modelName of candidateModels) {
+          try {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(modelName)}:generateContent?key=${encodeURIComponent(state.apiKey.trim())}`;
+            const res = await fetch(url, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                contents: [{ role: 'user', parts: [{ text: prompt }] }]
+              })
+            });
+            const json = await res.json();
+            if (!res.ok) {
+              const err = new Error(json.error?.message || `HTTP ${res.status}`);
+              err.status = res.status;
+              throw err;
+            }
+            data = json;
+            break;
+          } catch (err) {
+            lastErr = err;
+            const isRetryable = err.status === 404 || err.status === 429 || err.status === 503 ||
+              /not found|not supported|high demand|overloaded|unavailable|try again|exhausted/i.test(err.message);
+            if (!isRetryable) throw err;
+          }
+        }
+        if (!data) throw lastErr || new Error('대본 생성 실패');
+
+        let text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+        text = text.replace(/^```[a-z]*\n?/i, '').replace(/\n?```$/i, '').trim();
+        state.script = text;
+        document.getElementById('scriptTextarea').value = text;
+        validateScriptRules(text);
+        showToast('7가지 규칙이 반영된 대본을 생성했습니다!');
+      } catch (err) {
+        showToast(`오류: ${err.message}`);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalHtml;
+        if (window.lucide) lucide.createIcons();
+      }
+    }
+
+    function validateScriptRules(fullText) {
+      const bar = document.getElementById('scriptValidationBar');
+      bar.classList.remove('hidden');
+
+      const hasSections = fullText.includes('[Scene]') && fullText.includes('[Sample Context]') && fullText.includes('[Script]');
+      const scriptPart = fullText.split('[Script]')[1] || '';
+      const hasProperTags = scriptPart.includes('Speaker 1: ') && scriptPart.includes('Speaker 2: ');
+      const noMarkdownOrDigits = !/[*#()\/0-9]/.test(scriptPart.replace(/Speaker [12]:/g, ''));
+
+      const checks = [
+        { ok: hasSections, label: '3단 구조 ([Scene]/[Sample Context]/[Script])' },
+        { ok: hasProperTags, label: '화자 태그 (Speaker 1/2: )' },
+        { ok: noMarkdownOrDigits, label: 'TTS 순수 평문 (특수기호·숫자 없음)' }
+      ];
+
+      bar.innerHTML = checks.map((c) => `
+        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold ${c.ok ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-800 border border-amber-200'}">
+          ${c.ok ? '✓' : '!'} ${c.label}
+        </span>
+      `).join('');
+    }
+
+    // ---------- Step 4: Gemini Multi-Speaker TTS ----------
+    function parseScriptTurns(fullText) {
+      const scriptSection = fullText.includes('[Script]') ? fullText.split('[Script]')[1] : fullText;
+      const lines = scriptSection.split('\n').map((l) => l.trim()).filter(Boolean);
+      const turns = [];
+      for (const line of lines) {
+        if (line.startsWith('Speaker 1:')) {
+          turns.push({ speaker: 'Speaker 1', text: line.replace('Speaker 1:', '').trim() });
+        } else if (line.startsWith('Speaker 2:')) {
+          turns.push({ speaker: 'Speaker 2', text: line.replace('Speaker 2:', '').trim() });
+        } else if (turns.length > 0) {
+          turns[turns.length - 1].text += ' ' + line;
+        }
+      }
+      return turns;
+    }
+
+    async function generatePodcastAudio() {
+      if (!state.apiKey.trim()) {
+        showToast('먼저 상단에서 Google AI Studio API 키를 입력해 주세요.');
+        document.getElementById('settingsModal').classList.remove('hidden');
+        return;
+      }
+      const scriptVal = document.getElementById('scriptTextarea').value.trim();
+      if (!scriptVal) {
+        showToast('3단계에서 먼저 팟캐스트 대본을 생성하거나 입력해 주세요.');
+        return;
+      }
+
+      const turns = parseScriptTurns(scriptVal);
+      if (turns.length === 0) {
+        showToast('[Script] 안에 Speaker 1: / Speaker 2: 대사가 없습니다.');
+        return;
+      }
+
+      const btn = document.getElementById('generateAudioBtn');
+      const status = document.getElementById('audioStatusText');
+      btn.disabled = true;
+      status.textContent = `총 ${turns.length}개 대사를 음성으로 합성 중입니다... (30초~1분 정도 걸릴 수 있어요)`;
+
+      const voice1 = document.getElementById('speaker1Voice').value;
+      const voice2 = document.getElementById('speaker2Voice').value;
+
+      const contentItems = turns.map((t) => ({
+        type: 'text',
+        text: t.text,
+        annotations: [{
+          type: 'speech_metadata',
+          speaker: t.speaker,
+          style: t.speaker === 'Speaker 1'
+            ? '30s warm encouraging English tutor mom, consistent high volume level, moderate and relaxed pace, crisp native US English accent for English words'
+            : '8-year-old bright energetic boy Ian, consistent high volume level, moderate and relaxed pace, crisp native US English accent for English words'
+        }]
+      }));
+
+      try {
+        const ttsCandidates = [...new Set([state.ttsModel, 'gemini-3.8-flash-lite-tts'].filter(Boolean))];
+        let data = null;
+        let lastErr = null;
+        for (const ttsModelName of ttsCandidates) {
+          try {
+            const res = await fetch('https://generativelanguage.googleapis.com/v1beta/interactions', {
+              method: 'POST',
+              headers: {
+                'x-goog-api-key': state.apiKey.trim(),
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                model: ttsModelName,
+                input: [{ type: 'user_input', content: contentItems }],
+                response_format: { type: 'audio' },
+                generation_config: {
+                  speech_config: {
+                    speakers: [
+                      { speaker: 'Speaker 1', voice: voice1 },
+                      { speaker: 'Speaker 2', voice: voice2 }
+                    ]
+                  }
+                }
+              })
+            });
+            const json = await res.json();
+            if (!res.ok) {
+              const err = new Error(json.error?.message || `HTTP ${res.status}`);
+              err.status = res.status;
+              throw err;
+            }
+            data = json;
+            break;
+          } catch (err) {
+            lastErr = err;
+            const isRetryable = err.status === 404 || err.status === 429 || err.status === 503 ||
+              /not found|not supported|high demand|overloaded|unavailable|try again|exhausted/i.test(err.message);
+            if (!isRetryable) throw err;
+            status.textContent = `${ttsModelName} 혼잡 — 다른 TTS 모델로 자동 재시도 중...`;
+          }
+        }
+        if (!data) throw lastErr || new Error('TTS API 호출 실패');
+
+        let audioBase64 = null;
+        if (Array.isArray(data.steps)) {
+          for (const step of data.steps) {
+            if (Array.isArray(step.content)) {
+              for (const c of step.content) {
+                if (c.type === 'audio' && c.data) audioBase64 = c.data;
+              }
+            }
+          }
+        }
+        if (!audioBase64) throw new Error('응답에서 오디오 데이터를 찾지 못했습니다.');
+
+        const binary = atob(audioBase64);
+        const bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+        state.wavBytes = bytes;
+
+        if (state.wavUrl) URL.revokeObjectURL(state.wavUrl);
+        const blob = new Blob([bytes], { type: 'audio/wav' });
+        state.wavUrl = URL.createObjectURL(blob);
+
+        const player = document.getElementById('audioPlayer');
+        player.src = state.wavUrl;
+        document.getElementById('audioResultBox').classList.remove('hidden');
+        status.textContent = '음성 합성이 완료되었습니다!';
+        showToast('팟캐스트 오디오가 생성되었습니다!');
+      } catch (err) {
+        status.textContent = `오류: ${err.message}`;
+        showToast('음성 생성 중 오류가 발생했습니다.');
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    function downloadWav() {
+      if (!state.wavUrl) return;
+      const a = document.createElement('a');
+      a.href = state.wavUrl;
+      a.download = 'ian_vocab_podcast.wav';
+      a.click();
+    }
+
+    function downloadMp3() {
+      if (!state.wavBytes || typeof lamejs === 'undefined') {
+        showToast('MP3 변환 라이브러리 또는 오디오가 준비되지 않았습니다.');
+        return;
+      }
+      // WAV header is 44 bytes (16-bit PCM, 24000Hz, mono)
+      const pcmData = new Int16Array(state.wavBytes.buffer, 44, (state.wavBytes.byteLength - 44) / 2);
+      const mp3encoder = new lamejs.Mp3Encoder(1, 24000, 128);
+      const mp3Data = [];
+      const blockSize = 1152;
+      for (let i = 0; i < pcmData.length; i += blockSize) {
+        const chunk = pcmData.subarray(i, i + blockSize);
+        const buf = mp3encoder.encodeBuffer(chunk);
+        if (buf.length > 0) mp3Data.push(buf);
+      }
+      const endBuf = mp3encoder.flush();
+      if (endBuf.length > 0) mp3Data.push(endBuf);
+
+      const blob = new Blob(mp3Data, { type: 'audio/mp3' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'ian_vocab_podcast.mp3';
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 3000);
+    }
+
+    function copyTextFallback(text, msg) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => showToast(msg)).catch(() => {
+          legacyCopy(text, msg);
+        });
+      } else {
+        legacyCopy(text, msg);
+      }
+    }
+
+    function legacyCopy(text, msg) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      showToast(msg);
+    }
+
+    // ---------- Init & Listeners ----------
+    function initApp() {
+      if (window.__ianAppInitialized) return;
+      window.__ianAppInitialized = true;
+      loadSettings();
+      state.words = [];
+      renderWordCards();
+      switchStep(1);
+      if (window.lucide) lucide.createIcons();
+
+      document.querySelectorAll('.step-tab').forEach((tab) => {
+        tab.addEventListener('click', () => switchStep(Number(tab.dataset.step)));
+      });
+
+      document.getElementById('openSettingsBtn').addEventListener('click', () => {
+        renderSettingsModalState();
+        document.getElementById('settingsModal').classList.remove('hidden');
+      });
+      document.getElementById('closeSettingsBtn').addEventListener('click', () => {
+        document.getElementById('settingsModal').classList.add('hidden');
+      });
+      document.getElementById('closeSettingsDoneBtn').addEventListener('click', () => {
+        document.getElementById('settingsModal').classList.add('hidden');
+      });
+      document.getElementById('saveSettingsBtn').addEventListener('click', () => {
+        state.apiKey = document.getElementById('apiKeyInput').value.trim();
+        state.textModel = document.getElementById('textModelInput').value.trim() || 'gemini-3.8-flash';
+        state.ttsModel = document.getElementById('ttsModelInput').value.trim() || 'gemini-3.8-flash-tts';
+        try {
+          localStorage.setItem('ian_tts_api_key', state.apiKey);
+          localStorage.setItem('ian_tts_text_model', state.textModel);
+          localStorage.setItem('ian_tts_tts_model', state.ttsModel);
+        } catch (e) {}
+        updateApiBadge();
+        document.getElementById('settingsModal').classList.add('hidden');
+        showToast('API 설정이 저장되었습니다.');
+      });
+      document.getElementById('clearApiKeyBtn').addEventListener('click', () => {
+        state.apiKey = '';
+        document.getElementById('apiKeyInput').value = '';
+        try { localStorage.removeItem('ian_tts_api_key'); } catch (e) {}
+        updateApiBadge();
+        renderSettingsModalState();
+        showToast('API 키가 초기화되었습니다.');
+      });
+
+      document.getElementById('loadSampleBtn').addEventListener('click', () => {
+        state.words = SAMPLE_WORDS.map((w) => ({ ...w }));
+        renderWordCards();
+        showToast('Unit 11 샘플 단어 30개를 불러왔습니다.');
+      });
+
+      document.getElementById('imageInput').addEventListener('change', (e) => {
+        handleImageFiles(e.target.files);
+      });
+
+      document.getElementById('extractWordsBtn').addEventListener('click', extractWordsWithGemini);
+      document.getElementById('clearAllWordsBtn').addEventListener('click', () => {
+        state.words = [];
+        renderWordCards();
+        setExtractAlert('', '');
+        document.getElementById('extractStatus').textContent = '';
+        showToast('단어 리스트를 모두 비웠습니다.');
+      });
+      document.getElementById('addWordRowBtn').addEventListener('click', () => {
+        state.words.push({ id: state.words.length + 1, word: '', pos: '', en_def: '', ko_meaning: '', example: '' });
+        renderWordCards();
+      });
+
+      document.getElementById('goStep2Btn').addEventListener('click', () => switchStep(2));
+      document.getElementById('goStep3Btn').addEventListener('click', () => switchStep(3));
+      document.getElementById('goStep4Btn').addEventListener('click', () => switchStep(4));
+
+      document.getElementById('pdfTitleInput').addEventListener('input', renderPdfPreview);
+      document.getElementById('pdfModeSelect').addEventListener('change', (e) => {
+        const val = e.target.value;
+        if (val === 'retest_and_key' || val === 'retest_only') {
+          state.isRetest = true;
+          ensureShuffledWords(true);
+          showToast('Retest용으로 단어 순서를 새로 섞었습니다.');
+        } else {
+          state.isRetest = false;
+        }
+        renderPdfPreview();
+      });
+      document.getElementById('reshuffleTestBtn').addEventListener('click', () => {
+        if (state.words.length === 0) {
+          showToast('먼저 1단계에서 단어를 추가해 주세요.');
+          return;
+        }
+        state.isRetest = true;
+        const sel = document.getElementById('pdfModeSelect');
+        if (sel.value === 'study_only') sel.value = 'retest_and_key';
+        ensureShuffledWords(true);
+        renderPdfPreview();
+        showToast('단어 순서를 랜덤으로 다시 섞었습니다!');
+      });
+      document.getElementById('printPdfBtn').addEventListener('click', async () => {
+        if (state.words.length === 0) {
+          showToast('먼저 1단계에서 단어를 추가해 주세요.');
+          return;
+        }
+        const btn = document.getElementById('printPdfBtn');
+        const origHtml = btn.innerHTML;
+        if (typeof html2pdf === 'undefined') {
+          showToast('PDF 변환 라이브러리를 불러오는 중입니다. 잠시 후 다시 눌러 주세요.');
+          return;
+        }
+        btn.disabled = true;
+        btn.innerHTML = '<span class="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span><span>PDF 저장 중...</span>';
+        try {
+          renderPdfPreview();
+          const element = document.getElementById('printArea');
+          const rawTitle = (document.getElementById('pdfTitleInput').value.trim() || 'vocabulary_list')
+            .replace(/[\\/:*?"<>|]/g, '_');
+          const opt = {
+            margin: [10, 10, 10, 10],
+            filename: `${rawTitle}.pdf`,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+            pagebreak: { mode: ['css', 'legacy'], before: '.page-break' }
+          };
+          await html2pdf().set(opt).from(element).save();
+          showToast(`${rawTitle}.pdf 파일을 저장했습니다.`);
+        } catch (err) {
+          showToast(`PDF 저장 오류: ${err.message}`);
+        } finally {
+          btn.disabled = false;
+          btn.innerHTML = origHtml;
+          if (window.lucide) lucide.createIcons();
+        }
+      });
+
+      document.getElementById('generateScriptBtn').addEventListener('click', generatePodcastScript);
+      document.getElementById('scriptTextarea').addEventListener('input', (e) => {
+        state.script = e.target.value;
+        validateScriptRules(state.script);
+      });
+      document.getElementById('copyScriptBtn').addEventListener('click', () => {
+        copyTextFallback(document.getElementById('scriptTextarea').value, '대본을 클립보드에 복사했습니다.');
+      });
+
+      document.getElementById('generateAudioBtn').addEventListener('click', generatePodcastAudio);
+      document.getElementById('downloadWavBtn').addEventListener('click', downloadWav);
+      document.getElementById('downloadMp3Btn').addEventListener('click', downloadMp3);
+      document.getElementById('copyFfmpegBtn').addEventListener('click', () => {
+        copyTextFallback(document.getElementById('ffmpegCmd').textContent, 'ffmpeg 명령어를 복사했습니다.');
+      });
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initApp);
+    } else {
+      initApp();
+    }
+  </script>
+</body>
+</html>
