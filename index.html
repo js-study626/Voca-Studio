@@ -326,7 +326,7 @@
 
       <!-- Live A4 Preview -->
       <div class="overflow-x-auto pb-2">
-        <div id="printArea" class="pdf-sheet border border-slate-200 shadow-sm rounded-xl max-w-[820px] mx-auto text-slate-900">
+        <div id="printArea" class="pdf-sheet border border-slate-200 shadow-sm rounded-xl max-w-[718px] mx-auto text-slate-900">
           <!-- Rendered dynamically -->
         </div>
       </div>
@@ -592,7 +592,7 @@
 
   <!-- A4 한 장 맞춤 측정용 오프스크린 시트 (화면에는 보이지 않음) -->
   <div id="pdfMeasure" class="pdf-sheet" aria-hidden="true"
-    style="position:absolute; left:-10000px; top:0; width:760px; height:auto; visibility:hidden; pointer-events:none;"></div>
+    style="position:absolute; left:-10000px; top:0; width:718px; height:auto; visibility:hidden; pointer-events:none;"></div>
 
   <script>
     // ---------- State ----------
@@ -1160,10 +1160,13 @@ ${rawText ? 'Text input:\n' + rawText : ''}`
     }
 
     // ---------- PDF A4 한 장 맞춤 ----------
-    const PDF_CAPTURE_WIDTH = 760;      // A4 비율 기준 고정 캡처 폭(px)
     const PDF_PAGE_MARGIN_MM = 10;      // html2pdf 여백(mm)
     const A4_W_MM = 210;
     const A4_H_MM = 297;
+    const MM_TO_PX = 96 / 25.4;         // html2pdf가 쓰는 mm→px 기준(96dpi)
+    // html2pdf는 원본을 여백을 뺀 용지 폭(190mm ≈ 718px)짜리 컨테이너에 다시 배치해 캡처한다.
+    const PDF_CONTENT_W = Math.floor((A4_W_MM - PDF_PAGE_MARGIN_MM * 2) * MM_TO_PX);
+    const PDF_CONTENT_H = Math.floor((A4_H_MM - PDF_PAGE_MARGIN_MM * 2) * MM_TO_PX) - 4;
 
     // 위에서부터 차례로 시도해 한 페이지에 들어오는 가장 큰(읽기 좋은) 밀도를 고른다.
     const PDF_FIT_STEPS = [
@@ -1197,8 +1200,8 @@ ${rawText ? 'Text input:\n' + rawText : ''}`
 
       const contentW = A4_W_MM - PDF_PAGE_MARGIN_MM * 2;
       const contentH = A4_H_MM - PDF_PAGE_MARGIN_MM * 2;
-      const budget = Math.floor((contentH / contentW) * PDF_CAPTURE_WIDTH) - 6;
-      measure.style.width = `${PDF_CAPTURE_WIDTH}px`;
+      const budget = Math.min(PDF_CONTENT_H, Math.floor((contentH / contentW) * PDF_CONTENT_W) - 4);
+      measure.style.width = `${PDF_CONTENT_W}px`;
 
       let chosen = PDF_FIT_STEPS[PDF_FIT_STEPS.length - 1];
       for (const step of PDF_FIT_STEPS) {
@@ -1287,8 +1290,8 @@ ${rawText ? 'Text input:\n' + rawText : ''}`
           </div>
           <table class="pdf-table">
             <colgroup>
-              <col style="width: 24%" />
-              <col style="width: 24%" />
+              <col style="width: 20%" />
+              <col style="width: 22%" />
               <col />
             </colgroup>
             <thead>
@@ -2079,13 +2082,8 @@ ${wordListStr}`;
         btn.disabled = true;
         btn.innerHTML = '<span class="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span><span>PDF 저장 중...</span>';
         const element = document.getElementById('printArea');
-        const prevWidth = element.style.width;
-        const prevMaxWidth = element.style.maxWidth;
         try {
           renderPdfPreview();
-          // 기기 화면 폭에 상관없이 A4 비율(고정 폭)로 캡처해 한 장 배치를 같게 유지한다.
-          element.style.width = `${PDF_CAPTURE_WIDTH}px`;
-          element.style.maxWidth = 'none';
           const rawTitle = getExportBaseName('vocabulary_list');
           const opt = {
             margin: [PDF_PAGE_MARGIN_MM, PDF_PAGE_MARGIN_MM, PDF_PAGE_MARGIN_MM, PDF_PAGE_MARGIN_MM],
@@ -2100,8 +2098,6 @@ ${wordListStr}`;
         } catch (err) {
           showToast(`PDF 저장 오류: ${err.message}`);
         } finally {
-          element.style.width = prevWidth;
-          element.style.maxWidth = prevMaxWidth;
           btn.disabled = false;
           btn.innerHTML = origHtml;
           if (window.lucide) lucide.createIcons();
