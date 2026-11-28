@@ -1166,7 +1166,7 @@ ${rawText ? 'Text input:\n' + rawText : ''}`
     const MM_TO_PX = 96 / 25.4;         // html2pdf가 쓰는 mm→px 기준(96dpi)
     // html2pdf는 원본을 여백을 뺀 용지 폭(190mm ≈ 718px)짜리 컨테이너에 다시 배치해 캡처한다.
     const PDF_CONTENT_W = Math.floor((A4_W_MM - PDF_PAGE_MARGIN_MM * 2) * MM_TO_PX);
-    const PDF_CONTENT_H = Math.floor((A4_H_MM - PDF_PAGE_MARGIN_MM * 2) * MM_TO_PX) - 4;
+    const PDF_CONTENT_H = Math.floor((A4_H_MM - PDF_PAGE_MARGIN_MM * 2) * MM_TO_PX) - 8;
 
     // 위에서부터 차례로 시도해 한 페이지에 들어오는 가장 큰(읽기 좋은) 밀도를 고른다.
     const PDF_FIT_STEPS = [
